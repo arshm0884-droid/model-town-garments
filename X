@@ -1,6 +1,5 @@
 "use client";
 
-import { createClient } from "@/lib/supabase/client";
 import { useEffect, useMemo, useState } from "react";
 import QRCode from "qrcode";
 import { storeData } from "@/data/storeData";
@@ -26,8 +25,6 @@ type Customer = {
 type Coupon = (typeof storeData.coupons)[number];
 
 export default function Store() {
-  const supabase = useMemo(() => createClient(), []);
-
   const [category, setCategory] = useState("All");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("Popular");
@@ -42,22 +39,18 @@ export default function Store() {
 
   const [selectedSizes, setSelectedSizes] =
     useState<Record<number, string>>({});
-
   const [selectedColors, setSelectedColors] =
     useState<Record<number, string>>({});
 
   const [quickProduct, setQuickProduct] =
     useState<Product | null>(null);
-
   const [sizeGuideOpen, setSizeGuideOpen] =
     useState(false);
-
   const [zoomImage, setZoomImage] =
     useState(false);
 
   const [paymentOpen, setPaymentOpen] =
     useState(false);
-
   const [qrCode, setQrCode] = useState("");
 
   const [addedId, setAddedId] =
@@ -65,76 +58,81 @@ export default function Store() {
 
   const [couponCode, setCouponCode] =
     useState("");
-
   const [appliedCoupon, setAppliedCoupon] =
     useState<Coupon | null>(null);
-
   const [couponMessage, setCouponMessage] =
     useState("");
 
   const [loading, setLoading] = useState(true);
 
-  const [dbProducts, setDbProducts] =
-    useState<Product[]>([]);
+  const [customer, setCustomer] = useState<Customer>({
+    name: "",
+    phone: "",
+    address: "",
+    city: "",
+    state: "",
+    pincode: "",
+  });
 
-  const [customer, setCustomer] =
-    useState<Customer>({
-      name: "",
-      phone: "",
-      address: "",
-      city: "",
-      state: "",
-      pincode: "",
-    });
-
-  /* ---------------- LOAD PRODUCTS ---------------- */
+  /* ---------------- STORAGE ---------------- */
 
   useEffect(() => {
-    async function loadProducts() {
-      const { data, error } = await supabase
-        .from("products")
-        .select("*, categories(name)")
-        .eq("is_active", true)
-        .order("created_at", {
-          ascending: false,
-        });
-
-      if (error) {
-        console.error(
-          "Supabase products error:",
-          error
+    try {
+      const savedWishlist =
+        localStorage.getItem("model-town-wishlist");
+      const savedRecent =
+        localStorage.getItem(
+          "model-town-recently-viewed"
         );
+      const savedCart =
+        localStorage.getItem("model-town-cart");
 
-        setLoading(false);
-        return;
+      if (savedWishlist) {
+        setWishlist(JSON.parse(savedWishlist));
       }
 
-setDbProducts(
-  (data ?? []).map((p) => ({
-    ...p,
-    id: p.id,
-    name: p.name,
-    category: p.categories?.name || "All",
-    colors: p.colors ?? [],
-    stock: Number(p.stock ?? 0),
-    fabric: p.fabric ?? "",
-    fit: p.fit ?? "",
-    pattern: p.pattern ?? "",
-    washCare: p.wash_care ?? "",
-    rating: Number(p.rating ?? 0),
-    reviewCount: Number(p.review_count ?? 0),
-    badge: p.badge ?? "",
-    tags: [],
-    featured: false,
-    newest: true,
-  }))
-);
+      if (savedRecent) {
+        setRecentlyViewed(JSON.parse(savedRecent));
+      }
 
-setLoading(false);
-  }
+      if (savedCart) {
+        setCart(JSON.parse(savedCart));
+      }
+    } catch {}
 
-  loadProducts();
-}, []);
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 350);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        "model-town-wishlist",
+        JSON.stringify(wishlist)
+      );
+    } catch {}
+  }, [wishlist]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        "model-town-recently-viewed",
+        JSON.stringify(recentlyViewed)
+      );
+    } catch {}
+  }, [recentlyViewed]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        "model-town-cart",
+        JSON.stringify(cart)
+      );
+    } catch {}
+  }, [cart]);
 
   /* ---------------- PRODUCT HELPERS ---------------- */
 
@@ -151,9 +149,7 @@ setLoading(false);
   ) => {
     const offer = getOffer(product);
 
-    if (!offer) {
-      return product.price;
-    }
+    if (!offer) return product.price;
 
     if (offer.type === "percentage") {
       return Math.max(
@@ -176,8 +172,7 @@ setLoading(false);
   ) => {
     return (
       selectedSizes[product.id] ||
-      product.sizes?.[0] ||
-      ""
+      product.sizes[0]
     );
   };
 
@@ -186,8 +181,7 @@ setLoading(false);
   ) => {
     return (
       selectedColors[product.id] ||
-      product.colors?.[0] ||
-      ""
+      product.colors[0]
     );
   };
 
@@ -197,38 +191,38 @@ setLoading(false);
     const searchText =
       search.toLowerCase().trim();
 
-    const result = dbProducts.filter(
-      (product) => {
-        const matchesCategory =
-          category === "All" ||
-          product.category === category;
+    const result =
+      storeData.products.filter(
+        (product) => {
+          const matchesCategory =
+            category === "All" ||
+            product.category === category;
 
-        const matchesSearch =
-          !searchText ||
-          product.name
-            .toLowerCase()
-            .includes(searchText) ||
-          product.category
-            .toLowerCase()
-            .includes(searchText) ||
-          (product.tags ?? []).some(
-            (tag) =>
+          const matchesSearch =
+            !searchText ||
+            product.name
+              .toLowerCase()
+              .includes(searchText) ||
+            product.category
+              .toLowerCase()
+              .includes(searchText) ||
+            product.tags.some((tag) =>
               tag
                 .toLowerCase()
                 .includes(searchText)
+            );
+
+          const matchesWishlist =
+            !wishlistOnly ||
+            wishlist.includes(product.id);
+
+          return (
+            matchesCategory &&
+            matchesSearch &&
+            matchesWishlist
           );
-
-        const matchesWishlist =
-          !wishlistOnly ||
-          wishlist.includes(product.id);
-
-        return (
-          matchesCategory &&
-          matchesSearch &&
-          matchesWishlist
-        );
-      }
-    );
+        }
+      );
 
     if (sort === "Price: Low to High") {
       result.sort(
@@ -264,7 +258,6 @@ setLoading(false);
 
     return result;
   }, [
-    dbProducts,
     category,
     search,
     sort,
@@ -288,7 +281,7 @@ setLoading(false);
 
   const addAllWishlistToCart = () => {
     const products =
-      dbProducts.filter((product) =>
+      storeData.products.filter((product) =>
         wishlist.includes(product.id)
       );
 
@@ -298,7 +291,6 @@ setLoading(false);
       products.forEach((product) => {
         const size =
           getProductSize(product);
-
         const color =
           getProductColor(product);
 
@@ -353,7 +345,7 @@ setLoading(false);
     productId: number
   ) => {
     const product =
-      dbProducts.find(
+      storeData.products.find(
         (p) => p.id === productId
       );
 
@@ -361,7 +353,6 @@ setLoading(false);
 
     const size =
       getProductSize(product);
-
     const color =
       getProductColor(product);
 
@@ -459,14 +450,12 @@ setLoading(false);
     return cart
       .map((item) => {
         const product =
-          dbProducts.find(
+          storeData.products.find(
             (p) =>
               p.id === item.productId
           );
 
-        if (!product) {
-          return null;
-        }
+        if (!product) return null;
 
         return {
           ...item,
@@ -481,7 +470,7 @@ setLoading(false);
         finalPrice: number;
       }
     >;
-  }, [cart, dbProducts]);
+  }, [cart]);
 
   const originalSubtotal =
     cartProducts.reduce(
@@ -509,7 +498,7 @@ setLoading(false);
         offerDiscount
     );
 
-  /* ---------------- BUY MORE DISCOUNT ---------------- */
+  /* ---------------- ADVANCED OFFERS ---------------- */
 
   const buyMoreDiscount = useMemo(() => {
     const quantity = cart.reduce(
@@ -540,12 +529,10 @@ setLoading(false);
         buyMoreDiscount
     );
 
-  /* ---------------- COUPON ---------------- */
+  /* ---------------- COUPONS ---------------- */
 
   const couponDiscount = useMemo(() => {
-    if (!appliedCoupon) {
-      return 0;
-    }
+    if (!appliedCoupon) return 0;
 
     if (
       subtotalAfterOffers <
@@ -607,9 +594,7 @@ setLoading(false);
 
   const applyCoupon = () => {
     const code =
-      couponCode
-        .trim()
-        .toUpperCase();
+      couponCode.trim().toUpperCase();
 
     const coupon =
       storeData.coupons.find(
@@ -713,129 +698,55 @@ setLoading(false);
       return;
     }
 
-    if (
-      customer.phone.replace(/\D/g, "")
-        .length !== 10
-    ) {
-      alert(
-        "Please enter a valid 10-digit mobile number."
-      );
-      return;
-    }
-
     setPaymentOpen(true);
   };
 
   const createOrderId = () => {
     const now =
-      Date.now()
-        .toString()
-        .slice(-6);
+      Date.now().toString().slice(-6);
 
     return `MTG-${now}`;
   };
 
-const sendWhatsAppOrder = async () => {
-  if (!customer.name.trim()) {
-    alert("Please enter your name.");
-    return;
-  }
+  const sendWhatsAppOrder = () => {
+    const orderId = createOrderId();
 
-  const phone = customer.phone.replace(/\D/g, "");
+    const items = cartProducts
+      .map(
+        (item) =>
+          `• ${item.product.name} | Size: ${item.size} | Color: ${item.color} | Qty: ${item.quantity} | ₹${item.finalPrice * item.quantity}`
+      )
+      .join("\n");
 
-  if (phone.length !== 10) {
-    alert("Please enter a valid 10-digit mobile number.");
-    return;
-  }
+    const message = `Hello ${storeData.name},
 
-  if (!customer.address.trim()) {
-    alert("Please enter your address.");
-    return;
-  }
+I would like to place an order.
 
-  if (!customer.city.trim()) {
-    alert("Please enter your city.");
-    return;
-  }
+ORDER ID: ${orderId}
 
-  if (!customer.state.trim()) {
-    alert("Please enter your state.");
-    return;
-  }
+ORDER DETAILS:
+${items}
 
-  if (!/^\d{6}$/.test(customer.pincode.trim())) {
-    alert("Please enter a valid 6-digit pincode.");
-    return;
-  }
+Original Subtotal: ₹${originalSubtotal}
+Offer Discount: -₹${offerDiscount}
+Buy More Discount: -₹${buyMoreDiscount}
+Coupon: ${
+      appliedCoupon
+        ? appliedCoupon.code
+        : "None"
+    }
+Coupon Discount: -₹${couponDiscount}
+Delivery: ₹${delivery}
 
-  if (cart.length === 0) {
-    alert("Your cart is empty.");
-    return;
-  }
+FINAL PAYABLE: ₹${total}
 
-  const orderId = createOrderId();
+PAYMENT STATUS:
+Customer has requested payment confirmation.
+Payment is NOT automatically marked as paid.
 
-  const response = await fetch("/api/orders", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      customer: {
-        name: customer.name.trim(),
-        phone,
-        address: customer.address.trim(),
-        city: customer.city.trim(),
-        state: customer.state.trim(),
-        pincode: customer.pincode.trim(),
-      },
-      orderId,
-      items: cartProducts.map((item) => ({
-        product_id: item.productId,
-        product_name: item.product.name,
-        size: item.size,
-        color: item.color,
-        quantity: item.quantity,
-        unit_price: item.finalPrice,
-        total: item.finalPrice * item.quantity,
-      })),
-      subtotal: originalSubtotal,
-      offerDiscount: offerDiscount + buyMoreDiscount,
-      couponDiscount,
-      deliveryCharge: delivery,
-      total,
-      couponCode: appliedCoupon?.code ?? null,
-      paymentMethod: "UPI",
-    }),
-  });
+UPI ID: ${storeData.payment.upiId}
 
-  const result = await response.json();
-
-  if (!response.ok || !result.success) {
-    console.error("Order API error:", result.error);
-    alert(result.error || "Order save nahi hua. Please try again.");
-    return;
-  }
-
-  const itemText = cartProducts
-    .map(
-      (item) =>
-        `• ${item.product.name}
-  Size: ${item.size}
-  Color: ${item.color}
-  Qty: ${item.quantity}
-  Price: ₹${item.finalPrice}`
-    )
-    .join("\n");
-
-  const message = `
-*MODEL TOWN GARMENTS*
-━━━━━━━━━━━━━━━━━━
-*NEW ORDER*
-
-Order ID: ${orderId}
-
-*CUSTOMER DETAILS*
+CUSTOMER DETAILS:
 Name: ${customer.name}
 Phone: ${customer.phone}
 Address: ${customer.address}
@@ -843,55 +754,31 @@ City: ${customer.city}
 State: ${customer.state}
 Pincode: ${customer.pincode}
 
-*ORDER ITEMS*
-${itemText}
+Please verify payment and confirm the order.`;
 
-━━━━━━━━━━━━━━━━━━
-Original Subtotal: ₹${originalSubtotal}
-Offer Discount: -₹${offerDiscount + buyMoreDiscount}
-Coupon Discount: -₹${couponDiscount}
-Delivery: ₹${delivery}
+    window.open(
+      `https://wa.me/${storeData.whatsapp}?text=${encodeURIComponent(
+        message
+      )}`,
+      "_blank"
+    );
+  };
 
-*TOTAL: ₹${total}*
-
-Payment: UPI
-Payment Status: Pending
-Order Status: Pending
-━━━━━━━━━━━━━━━━━━
-`;
-
-  const whatsappNumber = storeData.whatsapp;
-
-  if (!whatsappNumber) {
-    alert("WhatsApp number is not configured.");
-    return;
-  }
-
-  window.open(
-    `https://wa.me/${String(whatsappNumber).replace(
-      /\D/g,
-      ""
-    )}?text=${encodeURIComponent(message)}`,
-    "_blank"
-  );
-};
   /* ---------------- RECENT ---------------- */
 
   const recentProducts =
     recentlyViewed
       .map((id) =>
-        dbProducts.find(
+        storeData.products.find(
           (product) =>
             product.id === id
         )
       )
       .filter(Boolean) as Product[];
 
-  /* ---------------- SIMILAR ---------------- */
-
   const similarProducts =
     quickProduct
-      ? dbProducts
+      ? storeData.products
           .filter(
             (product) =>
               product.category ===
@@ -936,7 +823,6 @@ Order Status: Pending
         <div className="flex flex-col gap-7">
 
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-
             <div>
               <div className="text-xs font-black tracking-[0.28em] text-blue-600">
                 SHOP COLLECTION
@@ -954,7 +840,6 @@ Order Status: Pending
             </div>
 
             <div className="flex flex-col gap-2 sm:flex-row">
-
               <button
                 onClick={() =>
                   setWishlistOnly(
@@ -978,15 +863,12 @@ Order Status: Pending
                 <input
                   value={search}
                   onChange={(e) =>
-                    setSearch(
-                      e.target.value
-                    )
+                    setSearch(e.target.value)
                   }
                   placeholder="Search products..."
                   className="w-full rounded-full border border-slate-200 bg-white py-3.5 pl-11 pr-5 text-sm outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-50"
                 />
               </div>
-
             </div>
           </div>
 
@@ -1015,7 +897,6 @@ Order Status: Pending
           {/* SORT */}
 
           <div className="flex items-center justify-between border-y border-slate-100 py-4">
-
             <div className="text-sm font-bold text-slate-500">
               {filteredProducts.length} styles
             </div>
@@ -1038,7 +919,6 @@ Order Status: Pending
                 )
               )}
             </select>
-
           </div>
 
           {/* LOADING */}
@@ -1053,7 +933,6 @@ Order Status: Pending
                   className="animate-pulse overflow-hidden rounded-[1.5rem] border border-slate-100 bg-white"
                 >
                   <div className="aspect-[4/5] bg-slate-100" />
-
                   <div className="space-y-3 p-5">
                     <div className="h-3 w-20 rounded bg-slate-100" />
                     <div className="h-5 w-4/5 rounded bg-slate-100" />
@@ -1065,11 +944,9 @@ Order Status: Pending
             </div>
           ) : (
             <>
-
               {/* PRODUCTS */}
 
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-
                 {filteredProducts.map(
                   (product) => {
                     const offer =
@@ -1089,7 +966,6 @@ Order Status: Pending
                         key={product.id}
                         className="group overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl"
                       >
-
                         <div
                           className="relative aspect-[4/5] cursor-pointer overflow-hidden bg-[#eef2f7]"
                           onClick={() =>
@@ -1098,15 +974,11 @@ Order Status: Pending
                             )
                           }
                         >
-
                           <div className="absolute inset-0 bg-gradient-to-br from-[#dce6f2] via-[#f8fafc] to-[#c4d2e3] transition duration-500 group-hover:scale-105" />
 
                           <div className="relative flex h-full items-center justify-center">
-
                             <div className="text-center">
-
                               <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-[1.8rem] bg-white/80 text-5xl shadow-lg backdrop-blur">
-
                                 {product.category ===
                                 "Shirts"
                                   ? "👔"
@@ -1122,13 +994,11 @@ Order Status: Pending
                                       "Hoodies"
                                   ? "🧥"
                                   : "👕"}
-
                               </div>
 
                               <div className="mt-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
                                 Premium Visual
                               </div>
-
                             </div>
                           </div>
 
@@ -1145,7 +1015,6 @@ Order Status: Pending
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-
                               toggleWishlist(
                                 product.id
                               );
@@ -1158,11 +1027,9 @@ Order Status: Pending
                               ? "❤️"
                               : "♡"}
                           </button>
-
                         </div>
 
                         <div className="p-5">
-
                           <div className="text-[10px] font-black uppercase tracking-[0.18em] text-blue-600">
                             {product.category}
                           </div>
@@ -1179,19 +1046,15 @@ Order Status: Pending
                           </button>
 
                           <div className="mt-2 flex items-center gap-2">
-
                             <span className="text-xs font-bold text-amber-500">
                               ★ {product.rating}
                             </span>
-
                             <span className="text-xs text-slate-400">
                               ({product.reviewCount})
                             </span>
-
                           </div>
 
                           <div className="mt-3 flex flex-wrap items-end gap-2">
-
                             <span className="text-xl font-black">
                               ₹{finalPrice}
                             </span>
@@ -1205,7 +1068,6 @@ Order Status: Pending
                                 Save ₹{saved}
                               </span>
                             )}
-
                           </div>
 
                           {product.stock <=
@@ -1218,8 +1080,7 @@ Order Status: Pending
                           )}
 
                           <div className="mt-4 flex flex-wrap gap-2">
-
-                            {(product.sizes ?? [])
+                            {product.sizes
                               .slice(0, 4)
                               .map(
                                 (size) => (
@@ -1249,7 +1110,6 @@ Order Status: Pending
                                   </button>
                                 )
                               )}
-
                           </div>
 
                           <button
@@ -1270,20 +1130,16 @@ Order Status: Pending
                               ? "✓ Added"
                               : "Add to Cart"}
                           </button>
-
                         </div>
-
                       </article>
                     );
                   }
                 )}
-
               </div>
 
               {filteredProducts.length ===
                 0 && (
                 <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-14 text-center">
-
                   <div className="text-4xl">
                     🔎
                   </div>
@@ -1310,13 +1166,10 @@ Order Status: Pending
                   >
                     Clear Filters
                   </button>
-
                 </div>
               )}
-
             </>
           )}
-
         </div>
       </section>
 
@@ -1324,9 +1177,7 @@ Order Status: Pending
 
       {recentProducts.length > 0 && (
         <section className="border-t border-slate-100 bg-slate-50 py-14">
-
           <div className="mx-auto max-w-7xl px-5 sm:px-8">
-
             <div className="text-xs font-black tracking-[0.28em] text-blue-600">
               RECENTLY VIEWED
             </div>
@@ -1336,7 +1187,6 @@ Order Status: Pending
             </h2>
 
             <div className="mt-7 grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
-
               {recentProducts.map(
                 (product) => (
                   <button
@@ -1348,7 +1198,6 @@ Order Status: Pending
                     }
                     className="rounded-2xl border border-slate-200 bg-white p-3 text-left shadow-sm"
                   >
-
                     <div className="flex aspect-square items-center justify-center rounded-xl bg-slate-50 text-4xl">
                       👕
                     </div>
@@ -1363,11 +1212,9 @@ Order Status: Pending
                         product
                       )}
                     </div>
-
                   </button>
                 )
               )}
-
             </div>
           </div>
         </section>
@@ -1377,9 +1224,7 @@ Order Status: Pending
 
       {wishlist.length > 0 && (
         <section className="mx-auto max-w-7xl px-5 py-8 sm:px-8">
-
           <div className="flex flex-col justify-between gap-4 rounded-3xl border border-rose-100 bg-rose-50 p-5 sm:flex-row sm:items-center">
-
             <div>
               <div className="font-black">
                 ❤️ {wishlist.length} saved item
@@ -1395,16 +1240,12 @@ Order Status: Pending
             </div>
 
             <button
-              onClick={
-                addAllWishlistToCart
-              }
+              onClick={addAllWishlistToCart}
               className="rounded-full bg-[#102a56] px-5 py-3 text-sm font-black text-white"
             >
               Add All to Cart →
             </button>
-
           </div>
-
         </section>
       )}
 
@@ -1422,7 +1263,6 @@ Order Status: Pending
           <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-blue-600 px-1.5 text-xs">
             {cartCount}
           </span>
-
         </button>
       )}
 
@@ -1435,16 +1275,13 @@ Order Status: Pending
             setQuickProduct(null)
           }
         >
-
           <div
             className="max-h-[94vh] w-full max-w-5xl overflow-y-auto rounded-t-[2rem] bg-white shadow-2xl sm:rounded-[2rem]"
             onClick={(e) =>
               e.stopPropagation()
             }
           >
-
             <div className="sticky top-0 z-20 flex items-center justify-between border-b border-slate-100 bg-white/95 px-5 py-4">
-
               <div className="text-sm font-black">
                 Product Details
               </div>
@@ -1457,7 +1294,6 @@ Order Status: Pending
               >
                 ×
               </button>
-
             </div>
 
             <div className="grid gap-8 p-5 sm:p-8 lg:grid-cols-2">
@@ -1465,16 +1301,13 @@ Order Status: Pending
               {/* IMAGE */}
 
               <div>
-
                 <div
                   onClick={() =>
                     setZoomImage(true)
                   }
                   className="flex aspect-square cursor-zoom-in items-center justify-center rounded-[2rem] bg-gradient-to-br from-[#e5ebf3] via-white to-[#cdd9e8]"
                 >
-
                   <div className="text-center">
-
                     <div className="text-8xl">
                       {quickProduct.category ===
                       "Jeans"
@@ -1487,26 +1320,21 @@ Order Status: Pending
                           quickProduct.category ===
                             "Hoodies"
                         ? "🧥"
-                        : quickProduct.category ===
-                          "Shirts"
-                        ? "👔"
                         : "👕"}
                     </div>
 
                     <div className="mt-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
                       Tap to zoom
                     </div>
-
                   </div>
 
+                  <span className="absolute" />
                 </div>
-
               </div>
 
               {/* DETAILS */}
 
               <div>
-
                 <div className="text-xs font-black uppercase tracking-[0.25em] text-blue-600">
                   {quickProduct.category}
                 </div>
@@ -1516,7 +1344,6 @@ Order Status: Pending
                 </h2>
 
                 <div className="mt-3 flex items-center gap-3">
-
                   <span className="font-bold text-amber-500">
                     ★ {quickProduct.rating}
                   </span>
@@ -1525,11 +1352,9 @@ Order Status: Pending
                     {quickProduct.reviewCount}{" "}
                     reviews
                   </span>
-
                 </div>
 
                 <div className="mt-6 flex items-end gap-3">
-
                   <span className="text-3xl font-black">
                     ₹
                     {getDiscountedPrice(
@@ -1540,7 +1365,6 @@ Order Status: Pending
                   <span className="text-lg text-slate-400 line-through">
                     ₹{quickProduct.price}
                   </span>
-
                 </div>
 
                 <div className="mt-3 inline-flex rounded-full bg-green-50 px-3 py-2 text-xs font-black text-green-700">
@@ -1552,20 +1376,17 @@ Order Status: Pending
                 </div>
 
                 <div className="mt-6 rounded-2xl border border-orange-100 bg-orange-50 p-4">
-
                   <div className="text-sm font-black text-orange-800">
                     {quickProduct.stock <=
                     5
                       ? `🔥 Only ${quickProduct.stock} left`
                       : `✓ ${quickProduct.stock} available`}
                   </div>
-
                 </div>
 
                 {/* COLORS */}
 
                 <div className="mt-7">
-
                   <div className="mb-3 text-xs font-black uppercase tracking-wider text-slate-500">
                     Colour ·{" "}
                     {getProductColor(
@@ -1574,9 +1395,7 @@ Order Status: Pending
                   </div>
 
                   <div className="flex flex-wrap gap-2">
-
-                    {(quickProduct.colors ??
-                      []).map(
+                    {quickProduct.colors.map(
                       (color) => (
                         <button
                           key={color}
@@ -1601,16 +1420,13 @@ Order Status: Pending
                         </button>
                       )
                     )}
-
                   </div>
                 </div>
 
                 {/* SIZE */}
 
                 <div className="mt-7">
-
                   <div className="mb-3 flex items-center justify-between">
-
                     <div className="text-xs font-black uppercase tracking-wider text-slate-500">
                       Select Size
                     </div>
@@ -1625,13 +1441,10 @@ Order Status: Pending
                     >
                       Size Guide
                     </button>
-
                   </div>
 
                   <div className="flex flex-wrap gap-2">
-
-                    {(quickProduct.sizes ??
-                      []).map(
+                    {quickProduct.sizes.map(
                       (size) => (
                         <button
                           key={size}
@@ -1656,20 +1469,16 @@ Order Status: Pending
                         </button>
                       )
                     )}
-
                   </div>
-
                 </div>
 
-                {/* PRODUCT DETAILS */}
+                {/* DETAILS */}
 
                 <div className="mt-7 grid grid-cols-2 gap-3">
-
                   <div className="rounded-2xl bg-slate-50 p-4">
                     <div className="text-[10px] font-black uppercase text-slate-400">
                       Fabric
                     </div>
-
                     <div className="mt-1 text-sm font-black">
                       {quickProduct.fabric}
                     </div>
@@ -1679,7 +1488,6 @@ Order Status: Pending
                     <div className="text-[10px] font-black uppercase text-slate-400">
                       Fit
                     </div>
-
                     <div className="mt-1 text-sm font-black">
                       {quickProduct.fit}
                     </div>
@@ -1689,7 +1497,6 @@ Order Status: Pending
                     <div className="text-[10px] font-black uppercase text-slate-400">
                       Pattern
                     </div>
-
                     <div className="mt-1 text-sm font-black">
                       {quickProduct.pattern}
                     </div>
@@ -1699,16 +1506,13 @@ Order Status: Pending
                     <div className="text-[10px] font-black uppercase text-slate-400">
                       Delivery
                     </div>
-
                     <div className="mt-1 text-sm font-black">
                       3–7 days
                     </div>
                   </div>
-
                 </div>
 
                 <div className="mt-4 rounded-2xl border border-slate-100 p-4">
-
                   <div className="text-xs font-black">
                     Wash Care
                   </div>
@@ -1716,11 +1520,9 @@ Order Status: Pending
                   <div className="mt-1 text-sm text-slate-500">
                     {quickProduct.washCare}
                   </div>
-
                 </div>
 
                 <div className="mt-7 flex gap-3">
-
                   <button
                     onClick={() =>
                       toggleWishlist(
@@ -1749,23 +1551,13 @@ Order Status: Pending
                       quickProduct
                     )}
                   </button>
-
                 </div>
 
                 <div className="mt-4 flex flex-wrap gap-3 text-xs font-bold text-slate-500">
-                  <span>
-                    ✓ All India Delivery
-                  </span>
-
-                  <span>
-                    ✓ ₹99 Shipping
-                  </span>
-
-                  <span>
-                    ✓ UPI Payment
-                  </span>
+                  <span>✓ All India Delivery</span>
+                  <span>✓ ₹99 Shipping</span>
+                  <span>✓ UPI Payment</span>
                 </div>
-
               </div>
             </div>
 
@@ -1773,13 +1565,11 @@ Order Status: Pending
 
             {similarProducts.length > 0 && (
               <div className="border-t border-slate-100 p-5 sm:p-8">
-
                 <div className="text-xs font-black tracking-[0.25em] text-blue-600">
                   YOU MAY ALSO LIKE
                 </div>
 
                 <div className="mt-5 grid gap-4 sm:grid-cols-4">
-
                   {similarProducts.map(
                     (product) => (
                       <button
@@ -1791,7 +1581,6 @@ Order Status: Pending
                         }
                         className="rounded-2xl border border-slate-200 p-3 text-left"
                       >
-
                         <div className="flex aspect-square items-center justify-center rounded-xl bg-slate-50 text-4xl">
                           👕
                         </div>
@@ -1806,15 +1595,12 @@ Order Status: Pending
                             product
                           )}
                         </div>
-
                       </button>
                     )
                   )}
-
                 </div>
               </div>
             )}
-
           </div>
         </div>
       )}
@@ -1828,16 +1614,13 @@ Order Status: Pending
             setSizeGuideOpen(false)
           }
         >
-
           <div
             className="w-full max-w-lg rounded-[2rem] bg-white p-6 shadow-2xl"
             onClick={(e) =>
               e.stopPropagation()
             }
           >
-
             <div className="flex items-start justify-between">
-
               <div>
                 <div className="text-xs font-black tracking-[0.2em] text-blue-600">
                   SIZE GUIDE
@@ -1858,11 +1641,9 @@ Order Status: Pending
               >
                 ×
               </button>
-
             </div>
 
             <div className="mt-6 overflow-hidden rounded-2xl border border-slate-200">
-
               <div className="grid grid-cols-4 bg-[#102a56] px-4 py-3 text-xs font-black text-white">
                 <span>Size</span>
                 <span>Chest</span>
@@ -1876,43 +1657,28 @@ Order Status: Pending
                     key={row.size}
                     className="grid grid-cols-4 border-t border-slate-100 px-4 py-3 text-xs font-bold text-slate-600"
                   >
-
                     <span className="font-black text-slate-900">
                       {row.size}
                     </span>
-
-                    <span>
-                      {row.chest}
-                    </span>
-
-                    <span>
-                      {row.length}
-                    </span>
-
+                    <span>{row.chest}</span>
+                    <span>{row.length}</span>
                     <span>
                       {row.shoulder}
                     </span>
-
                   </div>
                 )
               )}
-
             </div>
 
             <div className="mt-5 rounded-2xl bg-blue-50 p-4 text-sm leading-6 text-blue-800">
-
               <strong>
                 Not sure about your size?
               </strong>
-
               <br />
-
               Measure around the fullest
               part of your chest and
               compare it with the chart.
-
             </div>
-
           </div>
         </div>
       )}
@@ -1927,11 +1693,8 @@ Order Status: Pending
               setZoomImage(false)
             }
           >
-
             <div className="text-center">
-
               <div className="text-[10rem] sm:text-[14rem]">
-
                 {quickProduct.category ===
                 "Jeans"
                   ? "👖"
@@ -1943,19 +1706,13 @@ Order Status: Pending
                     quickProduct.category ===
                       "Hoodies"
                   ? "🧥"
-                  : quickProduct.category ===
-                    "Shirts"
-                  ? "👔"
                   : "👕"}
-
               </div>
 
               <div className="text-sm font-bold text-white/60">
                 Tap anywhere to close
               </div>
-
             </div>
-
           </div>
         )}
 
@@ -1968,18 +1725,14 @@ Order Status: Pending
             setCartOpen(false)
           }
         >
-
           <div
             className="absolute inset-y-0 right-0 w-full max-w-lg overflow-y-auto bg-white shadow-2xl"
             onClick={(e) =>
               e.stopPropagation()
             }
           >
-
             <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-5 py-5">
-
               <div>
-
                 <div className="text-xl font-black">
                   Your Cart
                 </div>
@@ -1987,7 +1740,6 @@ Order Status: Pending
                 <div className="mt-1 text-xs text-slate-500">
                   {cartCount} item(s)
                 </div>
-
               </div>
 
               <button
@@ -1998,7 +1750,6 @@ Order Status: Pending
               >
                 ×
               </button>
-
             </div>
 
             <div className="p-5">
@@ -2006,22 +1757,18 @@ Order Status: Pending
               {/* ITEMS */}
 
               <div className="space-y-3">
-
                 {cartProducts.map(
                   (item) => (
                     <div
                       key={`${item.productId}-${item.size}-${item.color}`}
                       className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
                     >
-
                       <div className="flex gap-4">
-
                         <div className="flex h-20 w-16 shrink-0 items-center justify-center rounded-xl bg-[#e7edf5] text-3xl">
                           👕
                         </div>
 
                         <div className="min-w-0 flex-1">
-
                           <div className="font-black">
                             {item.product.name}
                           </div>
@@ -2036,7 +1783,6 @@ Order Status: Pending
                             ₹
                             {item.finalPrice}
                           </div>
-
                         </div>
 
                         <button
@@ -2051,13 +1797,10 @@ Order Status: Pending
                         >
                           ×
                         </button>
-
                       </div>
 
                       <div className="mt-4 flex items-center justify-between">
-
                         <div className="flex items-center rounded-full border border-slate-200 bg-white">
-
                           <button
                             onClick={() =>
                               updateQuantity(
@@ -2089,7 +1832,6 @@ Order Status: Pending
                           >
                             +
                           </button>
-
                         </div>
 
                         <div className="font-black">
@@ -2097,19 +1839,15 @@ Order Status: Pending
                           {item.finalPrice *
                             item.quantity}
                         </div>
-
                       </div>
-
                     </div>
                   )
                 )}
-
               </div>
 
               {/* DELIVERY */}
 
               <div className="mt-8">
-
                 <div className="text-lg font-black">
                   Delivery Details
                 </div>
@@ -2121,7 +1859,6 @@ Order Status: Pending
                 </div>
 
                 <div className="mt-5 space-y-3">
-
                   <input
                     value={customer.name}
                     onChange={(e) =>
@@ -2139,16 +1876,7 @@ Order Status: Pending
                     onChange={(e) =>
                       setCustomer({
                         ...customer,
-                        phone:
-                          e.target.value
-                            .replace(
-                              /\D/g,
-                              ""
-                            )
-                            .slice(
-                              0,
-                              10
-                            ),
+                        phone: e.target.value,
                       })
                     }
                     placeholder="Mobile Number"
@@ -2172,7 +1900,6 @@ Order Status: Pending
                   />
 
                   <div className="grid grid-cols-2 gap-3">
-
                     <input
                       value={customer.city}
                       onChange={(e) =>
@@ -2197,7 +1924,6 @@ Order Status: Pending
                       placeholder="State"
                       className="w-full rounded-xl border border-slate-200 px-4 py-3.5 text-sm outline-none focus:border-blue-400"
                     />
-
                   </div>
 
                   <input
@@ -2233,20 +1959,17 @@ Order Status: Pending
                       business days
                     </div>
                   )}
-
                 </div>
               </div>
 
               {/* COUPONS */}
 
               <div className="mt-7 rounded-2xl border border-slate-200 p-5">
-
                 <div className="text-sm font-black">
                   🎁 Have a coupon?
                 </div>
 
                 <div className="mt-3 flex gap-2">
-
                   <input
                     value={couponCode}
                     onChange={(e) =>
@@ -2278,7 +2001,6 @@ Order Status: Pending
                       Apply
                     </button>
                   )}
-
                 </div>
 
                 {couponMessage && (
@@ -2293,385 +2015,3 @@ Order Status: Pending
                   </div>
                 )}
 
-                <div className="mt-4 flex flex-wrap gap-2">
-
-                  {storeData.coupons.map(
-                    (coupon) => (
-                      <button
-                        key={coupon.code}
-                        onClick={() => {
-                          setCouponCode(
-                            coupon.code
-                          );
-                          setCouponMessage("");
-                        }}
-                        className="rounded-full bg-slate-100 px-3 py-2 text-[10px] font-black text-slate-600"
-                      >
-                        {coupon.code}
-                      </button>
-                    )
-                  )}
-
-                </div>
-
-              </div>
-
-              {/* OFFER MESSAGE */}
-
-              {cartCount >= 2 && (
-                <div className="mt-5 rounded-2xl bg-blue-50 p-4 text-xs font-bold text-blue-700">
-                  🔥 Buy{" "}
-                  {cartCount >= 3
-                    ? "3+"
-                    : "2+"}{" "}
-                  items and get an
-                  extra{" "}
-                  {cartCount >= 3
-                    ? "5%"
-                    : "3%"}{" "}
-                  discount.
-                </div>
-              )}
-
-              {/* SUMMARY */}
-
-              <div className="mt-7 rounded-2xl bg-[#f4f6f9] p-5">
-
-                <div className="flex justify-between text-sm text-slate-500">
-                  <span>
-                    Product Total
-                  </span>
-
-                  <span>
-                    ₹{originalSubtotal}
-                  </span>
-                </div>
-
-                <div className="mt-3 flex justify-between text-sm font-bold text-green-600">
-                  <span>
-                    Offer Discount
-                  </span>
-
-                  <span>
-                    -₹{offerDiscount}
-                  </span>
-                </div>
-
-                {buyMoreDiscount > 0 && (
-                  <div className="mt-3 flex justify-between text-sm font-bold text-green-600">
-
-                    <span>
-                      Buy More Discount
-                    </span>
-
-                    <span>
-                      -₹{buyMoreDiscount}
-                    </span>
-
-                  </div>
-                )}
-
-                {appliedCoupon && (
-                  <div className="mt-3 flex justify-between text-sm font-bold text-green-600">
-
-                    <span>
-                      Coupon (
-                      {appliedCoupon.code})
-                    </span>
-
-                    <span>
-                      -₹{couponDiscount}
-                    </span>
-
-                  </div>
-                )}
-
-                <div className="mt-3 flex justify-between text-sm text-slate-500">
-
-                  <span>
-                    Delivery
-                  </span>
-
-                  <span>
-                    ₹{delivery}
-                  </span>
-
-                </div>
-
-                <div className="my-4 border-t border-slate-200" />
-
-                <div className="flex justify-between">
-
-                  <span className="font-black">
-                    Final Payable
-                  </span>
-
-                  <span className="text-xl font-black text-[#102a56]">
-                    ₹{total}
-                  </span>
-
-                </div>
-
-              </div>
-
-              <button
-                onClick={openPayment}
-                className="mt-4 w-full rounded-2xl bg-[#102a56] px-5 py-4 text-sm font-black text-white"
-              >
-                CONTINUE TO PAYMENT →
-              </button>
-
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* PAYMENT */}
-
-      {paymentOpen && (
-        <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-
-          <div className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-[2rem] bg-white p-6 shadow-2xl">
-
-            <div className="flex items-start justify-between">
-
-              <div>
-
-                <div className="text-xs font-black tracking-[0.2em] text-blue-600">
-                  UPI PAYMENT
-                </div>
-
-                <h2 className="mt-2 text-2xl font-black">
-                  Pay ₹{total}
-                </h2>
-
-              </div>
-
-              <button
-                onClick={() =>
-                  setPaymentOpen(false)
-                }
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100"
-              >
-                ×
-              </button>
-
-            </div>
-
-            {/* FINAL PAYMENT SUMMARY */}
-
-            <div className="mt-6 rounded-2xl bg-[#f4f6f9] p-5">
-
-              <div className="flex justify-between text-sm text-slate-500">
-
-                <span>
-                  Product Total
-                </span>
-
-                <span>
-                  ₹{originalSubtotal}
-                </span>
-
-              </div>
-
-              <div className="mt-2 flex justify-between text-sm font-bold text-green-600">
-
-                <span>
-                  Total Discount
-                </span>
-
-                <span>
-                  -₹{totalDiscount}
-                </span>
-
-              </div>
-
-              <div className="mt-2 flex justify-between text-sm text-slate-500">
-
-                <span>
-                  Delivery
-                </span>
-
-                <span>
-                  ₹{delivery}
-                </span>
-
-              </div>
-
-              <div className="my-4 border-t border-slate-200" />
-
-              <div className="flex justify-between">
-
-                <span className="font-black">
-                  Exact Payable
-                </span>
-
-                <span className="text-2xl font-black text-[#102a56]">
-                  ₹{total}
-                </span>
-
-              </div>
-
-            </div>
-
-            {/* QR */}
-
-            <div className="mt-6 text-center">
-
-              <div className="text-sm font-black">
-                Scan & Pay with any UPI app
-              </div>
-
-              <div className="mx-auto mt-4 flex h-64 w-64 items-center justify-center rounded-2xl border border-slate-200 bg-white p-3">
-
-                {qrCode ? (
-                  <img
-                    src={qrCode}
-                    alt="UPI payment QR"
-                    className="h-full w-full"
-                  />
-                ) : (
-                  <div className="text-sm text-slate-400">
-                    Generating QR...
-                  </div>
-                )}
-
-              </div>
-
-              <div className="mt-4 text-xs text-slate-500">
-                UPI ID
-              </div>
-
-              <div className="mt-1 font-black text-[#102a56]">
-                {storeData.payment.upiId}
-              </div>
-
-            </div>
-
-            {/* PAYMENT WARNING */}
-
-            <div className="mt-5 rounded-xl border border-amber-100 bg-amber-50 p-4 text-xs leading-5 text-amber-800">
-
-              <strong>
-                Payment verification required.
-              </strong>
-
-              <br />
-
-              QR scan/payment does NOT
-              automatically mark your order
-              as paid. Send the order on
-              WhatsApp after payment so the
-              store can verify it.
-
-            </div>
-
-            <button
-              onClick={sendWhatsAppOrder}
-              className="mt-5 w-full rounded-2xl bg-[#25D366] px-5 py-4 text-sm font-black text-white"
-            >
-              💬 I'VE PAID · SEND ORDER
-            </button>
-
-            <button
-              onClick={() =>
-                setPaymentOpen(false)
-              }
-              className="mt-3 w-full rounded-2xl border border-slate-200 px-5 py-3 text-sm font-bold text-slate-600"
-            >
-              Back to Cart
-            </button>
-
-          </div>
-        </div>
-      )}
-
-      {/* MOBILE BOTTOM NAV */}
-
-      <nav className="fixed bottom-0 left-0 right-0 z-[80] border-t border-slate-200 bg-white/95 px-2 py-2 shadow-2xl backdrop-blur md:hidden">
-
-        <div className="mx-auto flex max-w-lg items-center justify-around">
-
-          <button
-            onClick={() =>
-              document
-                .getElementById("shop")
-                ?.scrollIntoView({
-                  behavior: "smooth",
-                })
-            }
-            className="flex flex-col items-center gap-1 px-4 py-1 text-[10px] font-black text-slate-600"
-          >
-            🏠
-            <span>Shop</span>
-          </button>
-
-          <button
-            onClick={() =>
-              setWishlistOnly(
-                !wishlistOnly
-              )
-            }
-            className="flex flex-col items-center gap-1 px-4 py-1 text-[10px] font-black text-slate-600"
-          >
-            ❤️
-            <span>
-              Wishlist
-            </span>
-          </button>
-
-          <button
-            onClick={() =>
-              setCartOpen(true)
-            }
-            className="relative flex flex-col items-center gap-1 px-4 py-1 text-[10px] font-black text-slate-600"
-          >
-            🛒
-
-            <span>
-              Cart
-            </span>
-
-            {cartCount > 0 && (
-              <span className="absolute right-2 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-600 px-1 text-[8px] font-black text-white">
-                {cartCount}
-              </span>
-            )}
-
-          </button>
-
-          <a
-            href={`https://wa.me/${storeData.whatsapp}?text=${encodeURIComponent(
-              "Hello Model Town Garments, I need help."
-            )}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex flex-col items-center gap-1 px-4 py-1 text-[10px] font-black text-slate-600"
-          >
-            💬
-            <span>
-              Help
-            </span>
-          </a>
-
-        </div>
-
-      </nav>
-
-      {/* MOBILE WHATSAPP */}
-
-      <a
-        href={`https://wa.me/${storeData.whatsapp}?text=${encodeURIComponent(
-          "Hello Model Town Garments, I need help with a product."
-        )}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed bottom-[4.8rem] left-5 z-[75] flex h-12 w-12 items-center justify-center rounded-full bg-[#25D366] text-xl text-white shadow-xl md:hidden"
-        aria-label="WhatsApp help"
-      >
-        💬
-      </a>
-
-    </main>
-  );
-}
