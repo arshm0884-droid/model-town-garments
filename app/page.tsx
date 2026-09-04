@@ -2,6 +2,7 @@ import Link from "next/link";
 import Gallery from "@/components/Gallery";
 import Store from "@/components/Store";
 import { storeData } from "@/data/storeData";
+import AuthButton from "@/components/AuthButton";
 
 export default function Home() {
   return (
@@ -13,7 +14,6 @@ export default function Home() {
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#102a56] text-lg font-black text-white">
               MT
             </div>
-
             <div>
               <div className="text-sm font-black tracking-tight sm:text-base">
                 MODEL TOWN
@@ -42,16 +42,21 @@ export default function Home() {
             </a>
           </nav>
 
-          <a
-            href={`https://wa.me/${storeData.whatsapp}?text=${encodeURIComponent(
-              "Hello Model Town Garments, I would like to know more about your collection."
-            )}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-full bg-[#102a56] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[#173d79]"
-          >
-            WhatsApp
-          </a>
+          <div className="flex items-center gap-2">
+            <AuthButton />
+
+            <a
+              href={`https://wa.me/${storeData.whatsapp}?text=${encodeURIComponent(
+                "Hello Model Town Garments, I would like to know more about your collection."
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-full bg-[#102a56] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[#173d79]"
+            >
+              <span className="hidden sm:inline">WhatsApp</span>
+              <span className="sm:hidden">WA</span>
+            </a>
+          </div>
         </div>
       </header>
 
