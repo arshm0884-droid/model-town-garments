@@ -23,7 +23,14 @@ type Customer = {
   pincode: string;
 };
 
-type Coupon = (typeof storeData.coupons)[number];
+type Coupon = {
+  id: string;
+  code: string;
+  type: "percentage" | "flat";
+  value: number;
+  minimum_order_amount: number;
+  is_active: boolean;
+};
 
 export default function Store() {
   const supabase = useMemo(() => createClient(), []);
@@ -76,6 +83,12 @@ export default function Store() {
 
   const [dbProducts, setDbProducts] =
     useState<Product[]>([]);
+
+  const [dbOffers, setDbOffers] =
+    useState<any[]>([]);
+
+  const [dbCoupons, setDbCoupons] =
+    useState<Coupon[]>([]);
 
   const [customer, setCustomer] =
     useState<Customer>({
@@ -136,13 +149,54 @@ setLoading(false);
   loadProducts();
 }, []);
 
+  /* ---------------- LOAD OFFERS & COUPONS ---------------- */
+
+  useEffect(() => {
+    async function loadOffersAndCoupons() {
+      const [offersResult, couponsResult] =
+        await Promise.all([
+          supabase
+            .from("offers")
+            .select("*, categories(name)")
+            .eq("is_active", true),
+
+          supabase
+            .from("coupons")
+            .select("*")
+            .eq("is_active", true),
+        ]);
+
+      if (offersResult.error) {
+        console.error(
+          "Supabase offers error:",
+          offersResult.error
+        );
+      } else {
+        setDbOffers(offersResult.data ?? []);
+      }
+
+      if (couponsResult.error) {
+        console.error(
+          "Supabase coupons error:",
+          couponsResult.error
+        );
+      } else {
+        setDbCoupons(
+          (couponsResult.data ?? []) as Coupon[]
+        );
+      }
+    }
+
+    loadOffersAndCoupons();
+  }, []);
+
   /* ---------------- PRODUCT HELPERS ---------------- */
 
   const getOffer = (product: Product) => {
-    return storeData.offers.find(
+    return dbOffers.find(
       (offer) =>
-        offer.active &&
-        offer.category === product.category
+        offer.is_active &&
+        offer.categories?.name === product.category
     );
   };
 
@@ -155,19 +209,19 @@ setLoading(false);
       return product.price;
     }
 
-    if (offer.type === "percentage") {
+    if (offer.discount_type === "percentage") {
       return Math.max(
         0,
         Math.round(
           product.price *
-            (1 - offer.value / 100)
+            (1 - Number(offer.discount_value) / 100)
         )
       );
     }
 
     return Math.max(
       0,
-      product.price - offer.value
+      product.price - Number(offer.discount_value)
     );
   };
 
@@ -549,7 +603,7 @@ setLoading(false);
 
     if (
       subtotalAfterOffers <
-      appliedCoupon.minimumOrder
+      appliedCoupon.minimum_order_amount
     ) {
       return 0;
     }
@@ -606,41 +660,32 @@ setLoading(false);
   /* ---------------- COUPON ACTIONS ---------------- */
 
   const applyCoupon = () => {
-    const code =
-      couponCode
-        .trim()
-        .toUpperCase();
+    const code = couponCode.trim().toUpperCase();
 
-    const coupon =
-      storeData.coupons.find(
-        (item) =>
-          item.active &&
-          item.code.toUpperCase() ===
-            code
-      );
+    const coupon = dbCoupons.find(
+      (item) =>
+        item.is_active &&
+        item.code.toUpperCase() === code
+    );
 
     if (!coupon) {
-      setCouponMessage(
-        "Invalid or inactive coupon."
-      );
+      setCouponMessage("Invalid or inactive coupon.");
       return;
     }
 
     if (
       subtotalAfterOffers <
-      coupon.minimumOrder
+      Number(coupon.minimum_order_amount)
     ) {
       setCouponMessage(
-        `Minimum order ₹${coupon.minimumOrder} required.`
+        `Minimum order ₹${coupon.minimum_order_amount} required.`
       );
       return;
     }
 
     setAppliedCoupon(coupon);
     setCouponCode(coupon.code);
-    setCouponMessage(
-      `✓ ${coupon.label} applied`
-    );
+    setCouponMessage(`✓ ${coupon.code} applied`);
   };
 
   const removeCoupon = () => {
@@ -1138,7 +1183,9 @@ Order Status: Pending
 
                           {offer && (
                             <span className="absolute right-4 top-4 rounded-full bg-blue-600 px-3 py-1.5 text-[10px] font-black text-white shadow-md">
-                              {offer.label}
+                              {offer.discount_type === "percentage"
+  ? `${offer.discount_value}% OFF`
+  : `₹${offer.discount_value} OFF`}
                             </span>
                           )}
 
@@ -2295,7 +2342,7 @@ Order Status: Pending
 
                 <div className="mt-4 flex flex-wrap gap-2">
 
-                  {storeData.coupons.map(
+                  {dbCoupons.map(
                     (coupon) => (
                       <button
                         key={coupon.code}
