@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Model Town Garments | Men's Wear in Joya, Amroha",
+  title: "Model Town Garments | Premium Men's Wear in Joya, Amroha",
   description:
     "Shop men's shirts, T-shirts, jeans, trousers, jackets, track pants, hoodies, shorts and innerwear from Model Town Garments, Joya, Amroha. All India delivery available.",
   keywords: [
@@ -31,12 +31,12 @@ export const metadata: Metadata = {
   authors: [{ name: "Model Town Garments" }],
   creator: "Model Town Garments",
   publisher: "Model Town Garments",
-  metadataBase: new URL("https://model-town-garments.vercel.app"),
+  metadataBase: new URL("https://modeltowngarments.shop"),
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "Model Town Garments | Men's Wear",
+    title: "Model Town Garments | Premium Men's Wear",
     description:
       "Explore men's wear from shirts and T-shirts to jeans, trousers, jackets and more. All India delivery available.",
     type: "website",
@@ -45,7 +45,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Model Town Garments | Men's Wear",
+    title: "Model Town Garments | Premium Men's Wear",
     description:
       "Shop men's wear from Model Town Garments, Joya, Amroha.",
   },

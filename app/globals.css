@@ -2,7 +2,13 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #111318;
+  --mtg-ink: #111318;
+  --mtg-muted: #667085;
+  --mtg-border: #e7e9ee;
+  --mtg-navy: #102a56;
+  --mtg-blue: #2457a6;
+  --mtg-surface: #f7f8fa;
 }
 
 @theme inline {
@@ -12,15 +18,1917 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
+  margin: 0;
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--mtg-blue);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: #102a56;
+  color: #fff;
+}
+
+/* ---------- MODEL TOWN PREMIUM SYSTEM ---------- */
+
+.mtg-premium {
+  background:
+    linear-gradient(180deg, #ffffff 0%, #fbfbfc 100%);
+}
+
+.mtg-premium button {
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease,
+    background-color 180ms ease,
+    color 180ms ease,
+    opacity 180ms ease;
+}
+
+.mtg-premium button:active {
+  transform: scale(0.985);
+}
+
+.mtg-premium input,
+.mtg-premium select,
+.mtg-premium textarea {
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background-color 180ms ease;
+}
+
+.mtg-premium input:hover,
+.mtg-premium select:hover,
+.mtg-premium textarea:hover {
+  border-color: #cfd4dc;
+}
+
+.mtg-premium article {
+  border-color: var(--mtg-border) !important;
+  box-shadow:
+    0 1px 2px rgba(16, 24, 40, 0.03),
+    0 10px 30px rgba(16, 24, 40, 0.035);
+}
+
+.mtg-premium article:hover {
+  box-shadow:
+    0 2px 5px rgba(16, 24, 40, 0.05),
+    0 18px 45px rgba(16, 24, 40, 0.09);
+}
+
+.mtg-premium .group:hover {
+  border-color: #d8dce4;
+}
+
+/* Cleaner scrollbars */
+.mtg-premium ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.mtg-premium ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.mtg-premium ::-webkit-scrollbar-thumb {
+  background: #d5d9e0;
+  border-radius: 999px;
+}
+
+.mtg-premium ::-webkit-scrollbar-thumb:hover {
+  background: #b9bec8;
+}
+
+/* Better mobile tap targets */
+@media (max-width: 640px) {
+  .mtg-premium button {
+    min-height: 42px;
+  }
+
+  .mtg-premium input,
+  .mtg-premium select {
+    min-height: 46px;
+  }
+}
+
+/* Respect reduced-motion settings */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .mtg-premium *,
+  .mtg-premium *::before,
+  .mtg-premium *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* =========================================================
+   MODEL TOWN GARMENTS — PREMIUM UI V2
+   ========================================================= */
+
+.mtg-premium {
+  --mtg-ink: #101318;
+  --mtg-navy: #102a56;
+  --mtg-blue: #2457a6;
+  --mtg-muted: #697386;
+  --mtg-border: #e8ebf0;
+  --mtg-surface: #f7f8fa;
+  --mtg-radius: 18px;
+}
+
+/* Premium typography */
+.mtg-premium h1,
+.mtg-premium h2,
+.mtg-premium h3,
+.mtg-premium button {
+  letter-spacing: -0.015em;
+}
+
+.mtg-premium h1 {
+  line-height: 1.02;
+}
+
+.mtg-premium h2 {
+  line-height: 1.08;
+}
+
+/* Clean premium controls */
+.mtg-premium button {
+  border-radius: 12px;
+  font-weight: 700;
+}
+
+.mtg-premium button:hover {
+  filter: brightness(0.985);
+}
+
+.mtg-premium button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Product cards */
+.mtg-premium article {
+  border-radius: 20px !important;
+  overflow: hidden;
+  background: #fff;
+  box-shadow:
+    0 1px 2px rgba(16, 24, 40, .025),
+    0 8px 28px rgba(16, 24, 40, .035) !important;
+  transition:
+    transform .25s cubic-bezier(.2,.7,.2,1),
+    box-shadow .25s ease,
+    border-color .25s ease;
+}
+
+.mtg-premium article:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 4px 10px rgba(16, 24, 40, .05),
+    0 20px 50px rgba(16, 24, 40, .09) !important;
+}
+
+/* Product image area */
+.mtg-premium article .aspect-\[4\/5\] {
+  background:
+    radial-gradient(circle at 50% 35%, #ffffff 0, #f5f7fa 45%, #e9edf3 100%);
+}
+
+/* Search */
+.mtg-premium input {
+  border-color: #e2e5ea;
+  background: #fff;
+}
+
+.mtg-premium input:focus {
+  border-color: #102a56;
+  box-shadow: 0 0 0 4px rgba(16, 42, 86, .07);
+}
+
+/* Category pills */
+.mtg-premium .overflow-x-auto button {
+  white-space: nowrap;
+}
+
+/* Premium CTA */
+.mtg-premium button.bg-\[\#102a56\] {
+  box-shadow: 0 5px 16px rgba(16, 42, 86, .16);
+}
+
+.mtg-premium button.bg-\[\#102a56\]:hover {
+  box-shadow: 0 8px 22px rgba(16, 42, 86, .22);
+}
+
+/* Product price */
+.mtg-premium article .text-xl {
+  letter-spacing: -0.035em;
+}
+
+/* Modal */
+.mtg-premium .fixed.inset-0 {
+  overscroll-behavior: contain;
+}
+
+.mtg-premium .fixed.inset-0 > div {
+  box-shadow:
+    0 25px 80px rgba(0, 0, 0, .22);
+}
+
+/* Better form fields */
+.mtg-premium textarea,
+.mtg-premium select {
+  border-color: #e2e5ea;
+  background: #fff;
+}
+
+.mtg-premium textarea:focus,
+.mtg-premium select:focus {
+  border-color: #102a56;
+  box-shadow: 0 0 0 4px rgba(16, 42, 86, .07);
+  outline: none;
+}
+
+/* Remove visual noise */
+.mtg-premium .shadow-sm {
+  box-shadow: 0 1px 3px rgba(16, 24, 40, .04);
+}
+
+/* Mobile polish */
+@media (max-width: 640px) {
+  .mtg-premium section {
+    scroll-margin-top: 72px;
+  }
+
+  .mtg-premium article {
+    border-radius: 17px !important;
+  }
+
+  .mtg-premium .text-4xl {
+    letter-spacing: -0.045em;
+  }
+}
+
+/* GPU-friendly animations only */
+@media (prefers-reduced-motion: no-preference) {
+  .mtg-premium .group img {
+    transition: transform .45s cubic-bezier(.2,.7,.2,1);
+  }
+}
+
+
+/* =========================================================
+   MTG PREMIUM HEADER + HERO
+   ========================================================= */
+
+.mtg-premium header {
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(16, 24, 40, .07);
+}
+
+.mtg-premium header a,
+.mtg-premium header button {
+  transition: all .2s ease;
+}
+
+.mtg-premium header a:hover {
+  color: #102a56;
+}
+
+/* Hero premium treatment */
+.mtg-premium .mtg-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0 0 28px 28px;
+  background:
+    radial-gradient(circle at 80% 20%, rgba(45, 91, 160, .18), transparent 34%),
+    radial-gradient(circle at 15% 80%, rgba(16, 42, 86, .12), transparent 35%),
+    linear-gradient(135deg, #f8fafc 0%, #eef2f7 48%, #e7edf5 100%);
+}
+
+.mtg-premium .mtg-hero::before {
+  content: "";
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  right: -180px;
+  top: -180px;
+  border-radius: 999px;
+  border: 1px solid rgba(16, 42, 86, .08);
+  pointer-events: none;
+}
+
+.mtg-premium .mtg-hero::after {
+  content: "";
+  position: absolute;
+  width: 280px;
+  height: 280px;
+  left: -150px;
+  bottom: -160px;
+  border-radius: 999px;
+  border: 1px solid rgba(16, 42, 86, .06);
+  pointer-events: none;
+}
+
+.mtg-premium .mtg-hero-content {
+  position: relative;
+  z-index: 2;
+}
+
+.mtg-premium .mtg-hero-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border: 1px solid rgba(16, 42, 86, .12);
+  border-radius: 999px;
+  background: rgba(255,255,255,.72);
+  color: #102a56;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.mtg-premium .mtg-hero-title {
+  max-width: 760px;
+  color: #101318;
+  font-size: clamp(42px, 7vw, 76px);
+  font-weight: 900;
+  letter-spacing: -.055em;
+}
+
+.mtg-premium .mtg-hero-title span {
+  color: #102a56;
+}
+
+.mtg-premium .mtg-hero-description {
+  max-width: 590px;
+  color: #697386;
+  font-size: clamp(15px, 2vw, 18px);
+  line-height: 1.7;
+}
+
+.mtg-premium .mtg-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.mtg-premium .mtg-hero-primary {
+  min-height: 50px;
+  padding: 0 22px;
+  border-radius: 13px;
+  background: #102a56;
+  color: #fff;
+  box-shadow: 0 10px 28px rgba(16,42,86,.18);
+}
+
+.mtg-premium .mtg-hero-secondary {
+  min-height: 50px;
+  padding: 0 22px;
+  border: 1px solid #dce1e8;
+  border-radius: 13px;
+  background: rgba(255,255,255,.78);
+  color: #101318;
+}
+
+.mtg-premium .mtg-hero-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 32px rgba(16,42,86,.25);
+}
+
+.mtg-premium .mtg-hero-secondary:hover {
+  border-color: #bfc7d3;
+  background: #fff;
+}
+
+/* Trust strip */
+.mtg-premium .mtg-trust-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid rgba(16,24,40,.07);
+  border-bottom: 1px solid rgba(16,24,40,.07);
+}
+
+.mtg-premium .mtg-trust-item {
+  padding: 18px 14px;
+  text-align: center;
+}
+
+.mtg-premium .mtg-trust-item + .mtg-trust-item {
+  border-left: 1px solid rgba(16,24,40,.07);
+}
+
+.mtg-premium .mtg-trust-title {
+  color: #101318;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.mtg-premium .mtg-trust-text {
+  margin-top: 3px;
+  color: #7a8494;
+  font-size: 11px;
+}
+
+@media (max-width: 640px) {
+  .mtg-premium .mtg-hero {
+    border-radius: 0 0 22px 22px;
+  }
+
+  .mtg-premium .mtg-hero-title {
+    font-size: 43px;
+  }
+
+  .mtg-premium .mtg-hero-description {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .mtg-premium .mtg-hero-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .mtg-premium .mtg-hero-primary,
+  .mtg-premium .mtg-hero-secondary {
+    width: 100%;
+  }
+
+  .mtg-premium .mtg-trust-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .mtg-premium .mtg-trust-item + .mtg-trust-item {
+    border-left: 0;
+    border-top: 1px solid rgba(16,24,40,.07);
+  }
+}
+
+/* =========================================================
+   MTG PREMIUM PRODUCT CARDS V3
+   ========================================================= */
+
+.mtg-premium .mtg-product-card {
+  position: relative;
+  border: 1px solid #edf0f4;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow:
+    0 2px 5px rgba(16,24,40,.025),
+    0 12px 35px rgba(16,24,40,.045);
+  transition:
+    transform .28s cubic-bezier(.2,.7,.2,1),
+    box-shadow .28s ease,
+    border-color .28s ease;
+}
+
+.mtg-premium .mtg-product-card:hover {
+  transform: translateY(-5px);
+  border-color: #dfe5ed;
+  box-shadow:
+    0 6px 14px rgba(16,24,40,.055),
+    0 24px 55px rgba(16,24,40,.10);
+}
+
+.mtg-premium .mtg-product-image {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 35%, #fff 0%, #f5f7fa 48%, #e9edf3 100%);
+}
+
+.mtg-premium .mtg-product-image img {
+  transition: transform .5s cubic-bezier(.2,.7,.2,1);
+}
+
+.mtg-premium .mtg-product-card:hover .mtg-product-image img {
+  transform: scale(1.035);
+}
+
+.mtg-premium .mtg-product-badge {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  z-index: 3;
+  border-radius: 999px;
+  padding: 6px 9px;
+  background: #102a56;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  box-shadow: 0 5px 15px rgba(16,42,86,.18);
+}
+
+.mtg-premium .mtg-product-wishlist {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  z-index: 3;
+  display: grid;
+  height: 36px;
+  width: 36px;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,.85);
+  border-radius: 999px;
+  background: rgba(255,255,255,.88);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 5px 18px rgba(16,24,40,.08);
+}
+
+.mtg-premium .mtg-product-wishlist:hover {
+  transform: scale(1.06);
+}
+
+.mtg-premium .mtg-product-info {
+  padding: 16px;
+}
+
+.mtg-premium .mtg-product-category {
+  color: #728096;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+.mtg-premium .mtg-product-name {
+  margin-top: 5px;
+  color: #101318;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.mtg-premium .mtg-product-price {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.mtg-premium .mtg-product-price-current {
+  color: #102a56;
+  font-size: 19px;
+  font-weight: 900;
+  letter-spacing: -.035em;
+}
+
+.mtg-premium .mtg-product-price-old {
+  color: #9aa3b1;
+  font-size: 11px;
+  text-decoration: line-through;
+}
+
+.mtg-premium .mtg-product-rating {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 7px;
+  color: #7a8494;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.mtg-premium .mtg-product-action {
+  width: 100%;
+  margin-top: 13px;
+  min-height: 42px;
+  border-radius: 11px;
+  background: #102a56;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 900;
+  box-shadow: 0 7px 18px rgba(16,42,86,.13);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.mtg-premium .mtg-product-action:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(16,42,86,.20);
+}
+
+/* Product grid */
+.mtg-premium .mtg-product-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+
+@media (max-width: 1024px) {
+  .mtg-premium .mtg-product-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .mtg-premium .mtg-product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 11px;
+  }
+
+  .mtg-premium .mtg-product-info {
+    padding: 12px;
+  }
+
+  .mtg-premium .mtg-product-name {
+    font-size: 12px;
+  }
+
+  .mtg-premium .mtg-product-price-current {
+    font-size: 16px;
+  }
+
+  .mtg-premium .mtg-product-price-old {
+    font-size: 9px;
+  }
+
+  .mtg-premium .mtg-product-action {
+    min-height: 39px;
+    margin-top: 10px;
+    font-size: 11px;
+  }
+}
+
+/* ===== PREMIUM CART + CHECKOUT V4 ===== */
+
+.mtg-premium .fixed.z-\[100\] > div {
+  border-left: 1px solid rgba(226,232,240,.9);
+}
+
+.mtg-premium .fixed.z-\[100\] .sticky.top-0 {
+  background: rgba(255,255,255,.92);
+  backdrop-filter: blur(18px);
+}
+
+.mtg-premium .fixed.z-\[100\] .sticky.top-0 .text-xl {
+  letter-spacing: -0.035em;
+  color: #0f172a;
+}
+
+.mtg-premium .fixed.z-\[100\] .space-y-3 > div {
+  border: 1px solid #e2e8f0;
+  background: linear-gradient(145deg,#ffffff,#f8fafc);
+  box-shadow: 0 8px 24px rgba(15,23,42,.055);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.mtg-premium .fixed.z-\[100\] .space-y-3 > div:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 30px rgba(15,23,42,.08);
+}
+
+.mtg-premium .fixed.z-\[100\] input,
+.mtg-premium .fixed.z-\[100\] textarea {
+  background: #fff;
+  border-color: #dbe3ee;
+  box-shadow: 0 2px 8px rgba(15,23,42,.025);
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.mtg-premium .fixed.z-\[100\] input:focus,
+.mtg-premium .fixed.z-\[100\] textarea:focus {
+  border-color: #102a56;
+  box-shadow: 0 0 0 4px rgba(16,42,86,.08);
+}
+
+.mtg-premium .fixed.z-\[100\] .bg-blue-50 {
+  border: 1px solid rgba(59,130,246,.12);
+}
+
+.mtg-premium .fixed.z-\[100\] .bg-\[\#f4f6f9\] {
+  border: 1px solid #e2e8f0;
+  background: linear-gradient(145deg,#f8fafc,#f1f5f9);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.8);
+}
+
+.mtg-premium .fixed.z-\[100\] .bg-\[\#102a56\] {
+  box-shadow: 0 12px 26px rgba(16,42,86,.2);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.mtg-premium .fixed.z-\[100\] .bg-\[\#102a56\]:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 32px rgba(16,42,86,.25);
+}
+
+/* Payment modal */
+.mtg-premium .fixed.z-\[150\] > div {
+  border: 1px solid rgba(226,232,240,.9);
+  box-shadow: 0 30px 90px rgba(15,23,42,.22);
+}
+
+.mtg-premium .fixed.z-\[150\] .bg-\[\#f4f6f9\] {
+  border: 1px solid #e2e8f0;
+  background: linear-gradient(145deg,#f8fafc,#f1f5f9);
+}
+
+.mtg-premium .fixed.z-\[150\] img {
+  display: block;
+  border-radius: 14px;
+}
+
+.mtg-premium .fixed.z-\[150\] .border-amber-100 {
+  border-color: #fde68a;
+  box-shadow: 0 8px 20px rgba(245,158,11,.06);
+}
+
+.mtg-premium .fixed.z-\[150\] .bg-\[\#25D366\] {
+  box-shadow: 0 12px 26px rgba(37,211,102,.2);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.mtg-premium .fixed.z-\[150\] .bg-\[\#25D366\]:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 32px rgba(37,211,102,.27);
+}
+
+/* Mobile checkout */
+@media (max-width: 640px) {
+  .mtg-premium .fixed.z-\[100\] > div {
+    max-width: none;
+    border-left: 0;
+  }
+
+  .mtg-premium .fixed.z-\[100\] .p-5 {
+    padding: 16px;
+  }
+
+  .mtg-premium .fixed.z-\[150\] {
+    padding: 12px;
+  }
+
+  .mtg-premium .fixed.z-\[150\] > div {
+    border-radius: 24px;
+    padding: 18px;
+  }
+
+  .mtg-premium .fixed.z-\[150\] .h-64.w-64 {
+    height: 230px;
+    width: 230px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mtg-premium .fixed.z-\[100\] *,
+  .mtg-premium .fixed.z-\[150\] * {
+    transition: none !important;
+  }
+}
+
+
+/* ===== PREMIUM CART ITEMS V5 ===== */
+
+.mtg-premium .fixed.z-\[100\] .space-y-3 > div {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  padding: 14px;
+}
+
+.mtg-premium .fixed.z-\[100\] .space-y-3 > div::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    135deg,
+    rgba(16,42,86,.025),
+    transparent 45%
+  );
+}
+
+/* Product preview */
+.mtg-premium .fixed.z-\[100\] .space-y-3 > div .h-20.w-16 {
+  height: 82px;
+  width: 68px;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: linear-gradient(145deg,#f1f5f9,#e2e8f0);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.9),
+    0 6px 16px rgba(15,23,42,.06);
+  font-size: 30px;
+}
+
+/* Product name */
+.mtg-premium .fixed.z-\[100\] .space-y-3 > div .font-black {
+  letter-spacing: -.025em;
+  color: #0f172a;
+}
+
+/* Variant information */
+.mtg-premium .fixed.z-\[100\] .space-y-3 > div .text-xs.text-slate-500 {
+  line-height: 1.5;
+}
+
+/* Item price */
+.mtg-premium .fixed.z-\[100\] .space-y-3 > div .text-blue-600 {
+  color: #102a56;
+  letter-spacing: -.02em;
+}
+
+/* Remove button */
+.mtg-premium .fixed.z-\[100\] .space-y-3 > div button.h-8.w-8 {
+  position: relative;
+  z-index: 2;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  transition:
+    background .2s ease,
+    color .2s ease,
+    border-color .2s ease,
+    transform .2s ease;
+}
+
+.mtg-premium .fixed.z-\[100\] .space-y-3 > div button.h-8.w-8:hover {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #dc2626;
+  transform: scale(1.04);
+}
+
+/* Quantity control */
+.mtg-premium .fixed.z-\[100\] .space-y-3 > div .rounded-full.border {
+  overflow: hidden;
+  border-color: #dbe3ee;
+  box-shadow: 0 3px 10px rgba(15,23,42,.04);
+}
+
+.mtg-premium .fixed.z-\[100\] .space-y-3 > div .rounded-full.border button {
+  min-width: 42px;
+  min-height: 40px;
+  transition:
+    background .18s ease,
+    color .18s ease;
+}
+
+.mtg-premium .fixed.z-\[100\] .space-y-3 > div .rounded-full.border button:hover {
+  background: #f1f5f9;
+  color: #102a56;
+}
+
+.mtg-premium .fixed.z-\[100\] .space-y-3 > div .rounded-full.border span {
+  min-width: 36px;
+  color: #102a56;
+}
+
+/* Line total */
+.mtg-premium .fixed.z-\[100\] .space-y-3 > div .mt-4 > .font-black {
+  font-size: 15px;
+  letter-spacing: -.025em;
+  color: #0f172a;
+}
+
+/* Better cart item spacing */
+@media (max-width: 640px) {
+  .mtg-premium .fixed.z-\[100\] .space-y-3 > div {
+    padding: 13px;
+    border-radius: 18px;
+  }
+
+  .mtg-premium .fixed.z-\[100\] .space-y-3 > div .h-20.w-16 {
+    height: 76px;
+    width: 62px;
+  }
+
+  .mtg-premium .fixed.z-\[100\] .space-y-3 > div .rounded-full.border button {
+    min-width: 40px;
+  }
+}
+
+
+/* ===== PREMIUM CHECKOUT FORM + COUPON V6 ===== */
+
+.mtg-premium .fixed.z-\[100\] .mt-8 > .text-lg.font-black {
+  font-size: 18px;
+  letter-spacing: -.035em;
+  color: #0f172a;
+}
+
+.mtg-premium .fixed.z-\[100\] .mt-8 > .text-lg.font-black::after {
+  content: "  •  Secure delivery details";
+  margin-left: 5px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  color: #94a3b8;
+}
+
+/* Delivery information banner */
+.mtg-premium .fixed.z-\[100\] .mt-2.rounded-xl.bg-blue-50 {
+  border: 1px solid rgba(59,130,246,.14);
+  background: linear-gradient(135deg,#eff6ff,#f8fbff);
+  box-shadow: 0 6px 18px rgba(37,99,235,.05);
+}
+
+/* Form fields */
+.mtg-premium .fixed.z-\[100\] .mt-5.space-y-3 {
+  position: relative;
+}
+
+.mtg-premium .fixed.z-\[100\] .mt-5.space-y-3 input,
+.mtg-premium .fixed.z-\[100\] .mt-5.space-y-3 textarea {
+  min-height: 48px;
+  border-radius: 14px;
+  border-color: #dbe3ee;
+  color: #0f172a;
+  font-weight: 600;
+  background: #fff;
+  box-shadow: 0 3px 12px rgba(15,23,42,.025);
+  transition:
+    border-color .2s ease,
+    box-shadow .2s ease,
+    transform .2s ease;
+}
+
+.mtg-premium .fixed.z-\[100\] .mt-5.space-y-3 textarea {
+  min-height: 92px;
+  line-height: 1.55;
+}
+
+.mtg-premium .fixed.z-\[100\] .mt-5.space-y-3 input::placeholder,
+.mtg-premium .fixed.z-\[100\] .mt-5.space-y-3 textarea::placeholder {
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.mtg-premium .fixed.z-\[100\] .mt-5.space-y-3 input:focus,
+.mtg-premium .fixed.z-\[100\] .mt-5.space-y-3 textarea:focus {
+  border-color: #102a56;
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(16,42,86,.07);
+  transform: translateY(-1px);
+}
+
+/* Pincode success */
+.mtg-premium .fixed.z-\[100\] .mt-5.space-y-3 .bg-green-50 {
+  border: 1px solid rgba(34,197,94,.14);
+  background: linear-gradient(135deg,#f0fdf4,#f7fff9);
+  box-shadow: 0 5px 16px rgba(34,197,94,.05);
+}
+
+/* Coupon card */
+.mtg-premium .fixed.z-\[100\] .mt-7.rounded-2xl.border {
+  border-color: #e2e8f0;
+  background: linear-gradient(145deg,#ffffff,#f8fafc);
+  box-shadow: 0 8px 24px rgba(15,23,42,.045);
+}
+
+.mtg-premium .fixed.z-\[100\] .mt-7.rounded-2xl.border .text-sm.font-black {
+  letter-spacing: -.02em;
+  color: #0f172a;
+}
+
+/* Coupon input */
+.mtg-premium .fixed.z-\[100\] .mt-7.rounded-2xl.border input {
+  min-height: 46px;
+  border-radius: 13px;
+  background: #f8fafc;
+  border-color: #dbe3ee;
+  font-size: 13px;
+  letter-spacing: .04em;
+}
+
+.mtg-premium .fixed.z-\[100\] .mt-7.rounded-2xl.border input:focus {
+  background: #fff;
+  border-color: #102a56;
+  box-shadow: 0 0 0 4px rgba(16,42,86,.07);
+}
+
+/* Coupon apply/remove */
+.mtg-premium .fixed.z-\[100\] .mt-7.rounded-2xl.border button {
+  min-height: 46px;
+  transition:
+    transform .2s ease,
+    box-shadow .2s ease,
+    background .2s ease;
+}
+
+.mtg-premium .fixed.z-\[100\] .mt-7.rounded-2xl.border button:hover {
+  transform: translateY(-1px);
+}
+
+.mtg-premium .fixed.z-\[100\] .mt-7.rounded-2xl.border button.bg-\[\#102a56\] {
+  box-shadow: 0 8px 18px rgba(16,42,86,.16);
+}
+
+/* Coupon chips */
+.mtg-premium .fixed.z-\[100\] .mt-7.rounded-2xl.border .rounded-full.bg-slate-100 {
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  transition:
+    background .2s ease,
+    border-color .2s ease,
+    transform .2s ease;
+}
+
+.mtg-premium .fixed.z-\[100\] .mt-7.rounded-2xl.border .rounded-full.bg-slate-100:hover {
+  border-color: #cbd5e1;
+  background: #fff;
+  transform: translateY(-1px);
+}
+
+/* Coupon message */
+.mtg-premium .fixed.z-\[100\] .mt-7.rounded-2xl.border .text-green-600 {
+  font-weight: 800;
+}
+
+/* Buy-more offer */
+.mtg-premium .fixed.z-\[100\] .mt-5.rounded-2xl.bg-blue-50 {
+  border: 1px solid rgba(59,130,246,.12);
+  background: linear-gradient(135deg,#eff6ff,#f8fbff);
+  box-shadow: 0 6px 18px rgba(37,99,235,.045);
+}
+
+/* Summary */
+.mtg-premium .fixed.z-\[100\] .mt-7.rounded-2xl.bg-\[\#f4f6f9\] {
+  border-radius: 20px;
+  padding: 18px;
+}
+
+.mtg-premium .fixed.z-\[100\] .mt-7.rounded-2xl.bg-\[\#f4f6f9\] .text-xl {
+  font-size: 24px;
+  letter-spacing: -.045em;
+}
+
+@media (max-width: 640px) {
+  .mtg-premium .fixed.z-\[100\] .mt-8 > .text-lg.font-black::after {
+    display: block;
+    margin: 3px 0 0;
+  }
+
+  .mtg-premium .fixed.z-\[100\] .mt-5.space-y-3 input,
+  .mtg-premium .fixed.z-\[100\] .mt-5.space-y-3 textarea {
+    font-size: 14px;
+  }
+}
+
+
+/* ===== PREMIUM PAYMENT MODAL V7 ===== */
+
+.mtg-premium .fixed.z-\[150\] > div {
+  position: relative;
+  overflow: hidden;
+  border-radius: 30px;
+  background: rgba(255,255,255,.98);
+}
+
+.mtg-premium .fixed.z-\[150\] > div::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 5px;
+  background: linear-gradient(90deg,#102a56,#2457a6,#102a56);
+}
+
+.mtg-premium .fixed.z-\[150\] .text-blue-600 {
+  letter-spacing: .22em;
+  font-size: 10px;
+}
+
+.mtg-premium .fixed.z-\[150\] h2 {
+  letter-spacing: -.045em;
+  color: #0f172a;
+}
+
+/* Payment summary */
+.mtg-premium .fixed.z-\[150\] .mt-6.rounded-2xl {
+  border: 1px solid #e2e8f0;
+  background: linear-gradient(145deg,#f8fafc,#f1f5f9);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.9),
+    0 8px 24px rgba(15,23,42,.045);
+}
+
+/* QR container */
+.mtg-premium .fixed.z-\[150\] .h-64.w-64 {
+  position: relative;
+  border: 1px solid #dbe3ee;
+  background: #fff;
+  border-radius: 22px;
+  box-shadow:
+    0 14px 35px rgba(15,23,42,.08),
+    inset 0 0 0 5px #fff;
+}
+
+.mtg-premium .fixed.z-\[150\] .h-64.w-64::after {
+  content: "SCAN TO PAY";
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 5px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #fff;
+  color: #64748b;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .16em;
+  white-space: nowrap;
+}
+
+/* UPI ID */
+.mtg-premium .fixed.z-\[150\] .text-\[\#102a56\] {
+  letter-spacing: .02em;
+}
+
+/* Warning */
+.mtg-premium .fixed.z-\[150\] .bg-amber-50 {
+  border-radius: 16px;
+  line-height: 1.65;
+}
+
+/* WhatsApp payment button */
+.mtg-premium .fixed.z-\[150\] .bg-\[\#25D366\] {
+  min-height: 52px;
+  border-radius: 16px;
+  letter-spacing: .02em;
+  box-shadow: 0 10px 24px rgba(37,211,102,.18);
+}
+
+.mtg-premium .fixed.z-\[150\] .bg-\[\#25D366\]:hover {
+  transform: translateY(-1px);
+}
+
+/* Back button */
+.mtg-premium .fixed.z-\[150\] button.border-slate-200 {
+  min-height: 46px;
+  border-radius: 14px;
+  transition:
+    background .2s ease,
+    border-color .2s ease;
+}
+
+.mtg-premium .fixed.z-\[150\] button.border-slate-200:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+@media (max-width: 640px) {
+  .mtg-premium .fixed.z-\[150\] > div {
+    border-radius: 24px;
+  }
+
+  .mtg-premium .fixed.z-\[150\] .h-64.w-64 {
+    height: 220px;
+    width: 220px;
+    border-radius: 20px;
+  }
+}
+
+
+/* ===== MOBILE SHOP EXPERIENCE V7 ===== */
+
+@media (max-width: 767px) {
+
+  /* Shop section */
+  .mtg-premium #shop {
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-top: 34px;
+    padding-bottom: 48px;
+  }
+
+  .mtg-premium #shop h1 {
+    font-size: 34px;
+    line-height: 1;
+    letter-spacing: -.055em;
+  }
+
+  .mtg-premium #shop .text-xs.font-black {
+    font-size: 9px;
+    letter-spacing: .22em;
+  }
+
+  .mtg-premium #shop > div {
+    gap: 22px;
+  }
+
+  /* Search + wishlist area */
+  .mtg-premium #shop .flex.flex-col.gap-5.lg\:flex-row
+    > .flex.flex-col.gap-2 {
+    gap: 10px;
+  }
+
+  .mtg-premium #shop .relative.sm\:w-72 {
+    width: 100%;
+  }
+
+  .mtg-premium #shop .relative.sm\:w-72 input {
+    height: 52px;
+    border-radius: 17px;
+    border-color: #dbe3ee;
+    background: #f8fafc;
+    box-shadow: 0 5px 18px rgba(15,23,42,.045);
+    font-size: 14px;
+    transition: all .2s ease;
+  }
+
+  .mtg-premium #shop .relative.sm\:w-72 input:focus {
+    background: #fff;
+    border-color: #102a56;
+    box-shadow: 0 0 0 4px rgba(16,42,86,.07);
+  }
+
+  .mtg-premium #shop .flex.flex-col.gap-2 > button {
+    min-height: 48px;
+    border-radius: 16px;
+    box-shadow: 0 5px 16px rgba(15,23,42,.04);
+    transition: transform .18s ease, box-shadow .18s ease;
+  }
+
+  .mtg-premium #shop .flex.flex-col.gap-2 > button:active {
+    transform: scale(.98);
+  }
+
+  /* Category scroller */
+  .mtg-premium #shop .overflow-x-auto {
+    margin-left: -16px;
+    margin-right: -16px;
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-bottom: 7px;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .mtg-premium #shop .overflow-x-auto::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mtg-premium #shop .overflow-x-auto button {
+    min-height: 43px;
+    padding-left: 17px;
+    padding-right: 17px;
+    border-radius: 14px;
+    scroll-snap-align: start;
+    font-size: 12px;
+    transition:
+      transform .18s ease,
+      background .18s ease,
+      box-shadow .18s ease;
+  }
+
+  .mtg-premium #shop .overflow-x-auto button:active {
+    transform: scale(.96);
+  }
+
+  /* Results + sort */
+  .mtg-premium #shop .border-y {
+    border-color: #eef2f7;
+    padding-top: 13px;
+    padding-bottom: 13px;
+  }
+
+  .mtg-premium #shop .border-y .text-sm {
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .mtg-premium #shop .border-y select {
+    min-height: 42px;
+    border-radius: 13px;
+    border-color: #dbe3ee;
+    padding-left: 13px;
+    padding-right: 13px;
+    font-size: 12px;
+    background: #fff;
+    outline: none;
+  }
+
+  .mtg-premium #shop .border-y select:focus {
+    border-color: #102a56;
+    box-shadow: 0 0 0 3px rgba(16,42,86,.06);
+  }
+}
+
+/* Smooth touch behaviour */
+@media (hover: none) {
+  .mtg-premium button,
+  .mtg-premium a {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+
+/* ===== MOBILE PRODUCT CARDS V8 ===== */
+
+@media (max-width: 767px) {
+
+  .mtg-premium .mtg-product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .mtg-premium .mtg-product-card {
+    min-width: 0;
+    overflow: hidden;
+    border-radius: 20px;
+    border: 1px solid #e6ebf2;
+    background: #fff;
+    box-shadow: 0 7px 22px rgba(15,23,42,.055);
+    transition:
+      transform .2s ease,
+      box-shadow .2s ease;
+  }
+
+  .mtg-premium .mtg-product-card:active {
+    transform: scale(.985);
+  }
+
+  .mtg-premium .mtg-product-image {
+    aspect-ratio: 1 / 1.08;
+    min-height: 0;
+    border-radius: 0;
+    background: linear-gradient(145deg,#f5f7fa,#e9eef5);
+    overflow: hidden;
+  }
+
+  .mtg-premium .mtg-product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform .35s ease;
+  }
+
+  .mtg-premium .mtg-product-card:active .mtg-product-image img {
+    transform: scale(1.015);
+  }
+
+  .mtg-premium .mtg-product-badge {
+    top: 9px;
+    left: 9px;
+    padding: 6px 8px;
+    border-radius: 9px;
+    font-size: 8px;
+    letter-spacing: .04em;
+    box-shadow: 0 5px 12px rgba(15,23,42,.12);
+  }
+
+  .mtg-premium .mtg-product-wishlist {
+    top: 9px;
+    right: 9px;
+    height: 34px;
+    width: 34px;
+    border: 1px solid rgba(226,232,240,.9);
+    border-radius: 50%;
+    background: rgba(255,255,255,.9);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 5px 14px rgba(15,23,42,.09);
+  }
+
+  .mtg-premium .mtg-product-info {
+    padding: 12px;
+  }
+
+  .mtg-premium .mtg-product-category {
+    font-size: 8px;
+    letter-spacing: .13em;
+    line-height: 1.2;
+  }
+
+  .mtg-premium .mtg-product-name {
+    margin-top: 5px;
+    min-height: 34px;
+    font-size: 12px;
+    line-height: 1.35;
+    letter-spacing: -.02em;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .mtg-premium .mtg-product-price {
+    margin-top: 8px;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .mtg-premium .mtg-product-price-current {
+    font-size: 16px;
+    letter-spacing: -.035em;
+  }
+
+  .mtg-premium .mtg-product-price-old {
+    font-size: 10px;
+  }
+
+  .mtg-premium .mtg-product-rating {
+    margin-top: 6px;
+    font-size: 9px;
+  }
+
+  .mtg-premium .mtg-product-action {
+    min-height: 42px;
+    margin-top: 10px;
+    border-radius: 13px;
+    font-size: 10px;
+    font-weight: 900;
+  }
+
+  /* Prevent accidental horizontal overflow */
+  .mtg-premium .mtg-product-grid > * {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 380px) {
+  .mtg-premium .mtg-product-grid {
+    gap: 9px;
+  }
+
+  .mtg-premium .mtg-product-info {
+    padding: 10px;
+  }
+
+  .mtg-premium .mtg-product-name {
+    font-size: 11px;
+  }
+
+  .mtg-premium .mtg-product-price-current {
+    font-size: 15px;
+  }
+}
+
+
+/* ===== MOBILE QUICK VIEW V9 ===== */
+
+@media (max-width: 767px) {
+
+  /* Quick-view modal */
+  .mtg-premium .fixed.z-\[110\] {
+    align-items: flex-end;
+    padding: 0;
+    background: rgba(2,6,23,.58);
+  }
+
+  .mtg-premium .fixed.z-\[110\] > div {
+    width: 100%;
+    max-width: none;
+    max-height: 94vh;
+    overflow-y: auto;
+    border-radius: 26px 26px 0 0;
+    border: 1px solid rgba(226,232,240,.9);
+    box-shadow: 0 -20px 60px rgba(2,6,23,.22);
+    animation: mtgMobileSheet .28s ease-out;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Sheet handle */
+  .mtg-premium .fixed.z-\[110\] > div::before {
+    content: "";
+    display: block;
+    width: 42px;
+    height: 4px;
+    margin: 9px auto 0;
+    border-radius: 999px;
+    background: #cbd5e1;
+  }
+
+  /* Product preview */
+  .mtg-premium .fixed.z-\[110\] .aspect-square {
+    border-radius: 20px;
+    background: linear-gradient(145deg,#f5f7fa,#e8edf4);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.9);
+  }
+
+  /* Size buttons */
+  .mtg-premium .fixed.z-\[110\] .min-w-12 {
+    min-width: 48px;
+    min-height: 46px;
+    border-radius: 13px;
+    transition: transform .16s ease, background .16s ease;
+  }
+
+  .mtg-premium .fixed.z-\[110\] .min-w-12:active {
+    transform: scale(.95);
+  }
+
+  /* Detail cards */
+  .mtg-premium .fixed.z-\[110\] .grid-cols-2 > div {
+    border: 1px solid #e7edf4;
+    background: linear-gradient(145deg,#f8fafc,#f1f5f9);
+    border-radius: 16px;
+  }
+
+  /* Wash care */
+  .mtg-premium .fixed.z-\[110\] .border-slate-100 {
+    border-color: #e5eaf1;
+    background: #fff;
+  }
+
+  /* Bottom actions */
+  .mtg-premium .fixed.z-\[110\] .mt-7.flex.gap-3 {
+    position: sticky;
+    bottom: -1px;
+    margin-left: -20px;
+    margin-right: -20px;
+    margin-bottom: -20px;
+    padding: 12px 20px calc(12px + env(safe-area-inset-bottom));
+    background: rgba(255,255,255,.94);
+    backdrop-filter: blur(16px);
+    border-top: 1px solid #eef2f7;
+    z-index: 5;
+  }
+
+  .mtg-premium .fixed.z-\[110\] .mt-7.flex.gap-3 .h-14 {
+    height: 50px;
+    width: 50px;
+    border-radius: 15px;
+  }
+
+  .mtg-premium .fixed.z-\[110\] .mt-7.flex.gap-3 .flex-1 {
+    min-height: 50px;
+    border-radius: 15px;
+    box-shadow: 0 10px 24px rgba(16,42,86,.18);
+    transition: transform .18s ease;
+  }
+
+  .mtg-premium .fixed.z-\[110\] .mt-7.flex.gap-3 button:active {
+    transform: scale(.98);
+  }
+
+  /* Similar products */
+  .mtg-premium .fixed.z-\[110\] .sm\:grid-cols-4 {
+    display: grid;
+    grid-template-columns: repeat(2,minmax(0,1fr));
+    gap: 10px;
+  }
+
+  .mtg-premium .fixed.z-\[110\] .sm\:grid-cols-4 > button {
+    border-radius: 16px;
+    padding: 10px;
+    border-color: #e5eaf1;
+    box-shadow: 0 5px 16px rgba(15,23,42,.04);
+  }
+
+  .mtg-premium .fixed.z-\[110\] .sm\:grid-cols-4 > button .aspect-square {
+    border-radius: 12px;
+  }
+}
+
+@keyframes mtgMobileSheet {
+  from {
+    transform: translateY(24px);
+    opacity: .7;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mtg-premium .fixed.z-\[110\] > div {
+    animation: none;
+  }
+}
+
+
+/* =========================================================
+   MODEL TOWN GARMENTS — MOBILE PREMIUM POLISH V10
+   Mobile only — desktop untouched
+   ========================================================= */
+
+@media (max-width: 767px) {
+
+  /* ---------- GLOBAL MOBILE FEEL ---------- */
+
+  .mtg-premium {
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mtg-premium button,
+  .mtg-premium input,
+  .mtg-premium textarea,
+  .mtg-premium select {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mtg-premium button:active {
+    transform: scale(.985);
+  }
+
+  /* ---------- PROMO BAR ---------- */
+
+  .mtg-premium > section:first-child {
+    padding-top: 9px;
+    padding-bottom: 9px;
+    background: linear-gradient(135deg,#eff6ff,#f8fbff);
+    border-color: #e0eaff;
+  }
+
+  .mtg-premium > section:first-child > div {
+    padding-left: 14px;
+    padding-right: 14px;
+    gap: 8px;
+  }
+
+  .mtg-premium > section:first-child .rounded-full {
+    flex-shrink: 0;
+    padding: 6px 9px;
+    border-radius: 9px;
+    font-size: 8px;
+    letter-spacing: .05em;
+  }
+
+  .mtg-premium > section:first-child .truncate {
+    font-size: 10px;
+    line-height: 1.3;
+  }
+
+  /* ---------- HERO ---------- */
+
+  .mtg-premium .mtg-hero {
+    position: relative;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 90% 15%,rgba(37,87,166,.10),transparent 35%),
+      linear-gradient(180deg,#f8fbff 0%,#fff 72%);
+  }
+
+  .mtg-premium .mtg-hero::after {
+    content: "";
+    position: absolute;
+    right: -90px;
+    bottom: -110px;
+    width: 230px;
+    height: 230px;
+    border-radius: 50%;
+    background: rgba(16,42,86,.045);
+    pointer-events: none;
+  }
+
+  .mtg-premium .mtg-hero-content {
+    position: relative;
+    z-index: 1;
+    display: block;
+    padding: 38px 16px 34px;
+  }
+
+  .mtg-premium .mtg-hero-kicker {
+    width: fit-content;
+    padding: 8px 11px;
+    border: 1px solid #dbe5f2;
+    border-radius: 999px;
+    background: rgba(255,255,255,.82);
+    box-shadow: 0 5px 16px rgba(15,23,42,.035);
+    font-size: 8px;
+    letter-spacing: .14em;
+  }
+
+  .mtg-premium .mtg-hero-title {
+    margin-top: 20px;
+    font-size: clamp(43px,12vw,58px);
+    line-height: .94;
+    letter-spacing: -.07em;
+  }
+
+  .mtg-premium .mtg-hero-description {
+    max-width: 330px;
+    margin-top: 18px;
+    font-size: 13px;
+    line-height: 1.65;
+    color: #64748b;
+  }
+
+  .mtg-premium .mtg-hero-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+    margin-top: 24px;
+  }
+
+  .mtg-premium .mtg-hero-primary,
+  .mtg-premium .mtg-hero-secondary {
+    min-height: 50px;
+    border-radius: 15px;
+    font-size: 11px;
+    font-weight: 900;
+  }
+
+  .mtg-premium .mtg-hero-primary {
+    box-shadow: 0 10px 25px rgba(16,42,86,.18);
+  }
+
+  .mtg-premium .mtg-trust-strip {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 0;
+    margin-top: 24px;
+    overflow: hidden;
+    border: 1px solid #e5ebf3;
+    background: rgba(255,255,255,.8);
+    box-shadow: 0 8px 24px rgba(15,23,42,.045);
+  }
+
+  .mtg-premium .mtg-trust-item {
+    min-width: 0;
+    padding: 12px 8px;
+  }
+
+  .mtg-premium .mtg-trust-item + .mtg-trust-item {
+    border-left: 1px solid #e8edf3;
+  }
+
+  .mtg-premium .mtg-trust-title {
+    font-size: 9px;
+    line-height: 1.25;
+  }
+
+  .mtg-premium .mtg-trust-text {
+    margin-top: 4px;
+    font-size: 7px;
+    line-height: 1.35;
+  }
+
+  /* ---------- SHOP INTRO ---------- */
+
+  .mtg-premium #shop h1 {
+    font-weight: 950;
+  }
+
+  .mtg-premium #shop > div > div:first-child p {
+    max-width: 320px;
+    line-height: 1.65;
+  }
+
+  /* ---------- MOBILE BOTTOM NAV ---------- */
+
+  .mtg-premium nav.fixed.bottom-0 {
+    padding-top: 7px;
+    padding-bottom: calc(7px + env(safe-area-inset-bottom));
+    border-top-color: #e5eaf1;
+    background: rgba(255,255,255,.94);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 -8px 30px rgba(15,23,42,.07);
+  }
+
+  .mtg-premium nav.fixed.bottom-0 > div {
+    min-height: 48px;
+  }
+
+  .mtg-premium nav.fixed.bottom-0 button {
+    min-width: 68px;
+    min-height: 44px;
+    border-radius: 14px;
+    color: #64748b;
+    transition:
+      background .18s ease,
+      color .18s ease,
+      transform .18s ease;
+  }
+
+  .mtg-premium nav.fixed.bottom-0 button:active {
+    background: #f1f5f9;
+  }
+
+  .mtg-premium nav.fixed.bottom-0 span {
+    font-size: 9px;
+    letter-spacing: .01em;
+  }
+
+  /* ---------- EXTRA BOTTOM CLEARANCE ---------- */
+
+  .mtg-premium {
+    padding-bottom: calc(92px + env(safe-area-inset-bottom));
+  }
+
+  /* ---------- SMALL SCREEN ---------- */
+
+  @media (max-width: 380px) {
+
+    .mtg-premium .mtg-hero-content {
+      padding-left: 14px;
+      padding-right: 14px;
+    }
+
+    .mtg-premium .mtg-hero-title {
+      font-size: 42px;
+    }
+
+    .mtg-premium .mtg-trust-title {
+      font-size: 8px;
+    }
+
+    .mtg-premium .mtg-trust-text {
+      font-size: 6.5px;
+    }
+
+    .mtg-premium nav.fixed.bottom-0 button {
+      min-width: 58px;
+    }
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .mtg-premium *,
+  .mtg-premium *::before,
+  .mtg-premium *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+  }
+}
+
+
+/* ===== PRODUCTION IMAGE SAFETY V11 ===== */
+
+/* Product images */
+.mtg-premium .mtg-product-image {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(145deg,#f5f7fa,#e8edf4);
+}
+
+.mtg-premium .mtg-product-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Quick-view image */
+.mtg-premium .fixed.z-\[110\] .aspect-square img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Image loading feel */
+.mtg-premium img {
+  -webkit-user-drag: none;
+}
+
+/* Prevent layout jumps */
+.mtg-premium .mtg-product-image img,
+.mtg-premium .fixed.z-\[110\] .aspect-square img {
+  min-width: 0;
+  min-height: 0;
+}
+
+/* Mobile image rendering */
+@media (max-width: 767px) {
+  .mtg-premium .mtg-product-image img {
+    aspect-ratio: 1 / 1.08;
+  }
+
+  .mtg-premium .fixed.z-\[110\] .aspect-square {
+    overflow: hidden;
+  }
+
+  .mtg-premium .fixed.z-\[110\] .aspect-square img {
+    border-radius: 20px;
+  }
 }

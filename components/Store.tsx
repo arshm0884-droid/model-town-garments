@@ -26,9 +26,14 @@ type Customer = {
 type Coupon = {
   id: string;
   code: string;
-  type: "percentage" | "flat";
-  value: number;
-  minimum_order_amount: number;
+  discount_type: "percentage" | "flat";
+  discount_value: number;
+  minimum_order: number;
+  maximum_discount: number | null;
+  usage_limit: number | null;
+  used_count: number;
+  starts_at: string | null;
+  expires_at: string | null;
   is_active: boolean;
 };
 
@@ -128,6 +133,7 @@ setDbProducts(
     id: p.id,
     name: p.name,
     category: p.categories?.name || "All",
+          images: p.images ?? [],
     colors: p.colors ?? [],
     stock: Number(p.stock ?? 0),
     fabric: p.fabric ?? "",
@@ -209,7 +215,7 @@ setLoading(false);
       return product.price;
     }
 
-    if (offer.discount_type === "percentage") {
+    if (offer.offer_type === "percentage") {
       return Math.max(
         0,
         Math.round(
@@ -603,27 +609,27 @@ setLoading(false);
 
     if (
       subtotalAfterOffers <
-      appliedCoupon.minimum_order_amount
+      appliedCoupon.minimum_order
     ) {
       return 0;
     }
 
     if (
-      appliedCoupon.type ===
+      appliedCoupon.discount_type ===
       "percentage"
     ) {
       return Math.min(
         subtotalAfterOffers,
         Math.round(
           subtotalAfterOffers *
-            (appliedCoupon.value / 100)
+            (appliedCoupon.discount_value / 100)
         )
       );
     }
 
     return Math.min(
       subtotalAfterOffers,
-      appliedCoupon.value
+      appliedCoupon.discount_value
     );
   }, [
     appliedCoupon,
@@ -675,17 +681,17 @@ setLoading(false);
 
     if (
       subtotalAfterOffers <
-      Number(coupon.minimum_order_amount)
+      Number(coupon.minimum_order)
     ) {
       setCouponMessage(
-        `Minimum order ₹${coupon.minimum_order_amount} required.`
+        `Minimum order ₹${coupon.minimum_order} required.`
       );
       return;
     }
 
     setAppliedCoupon(coupon);
     setCouponCode(coupon.code);
-    setCouponMessage(`✓ ${coupon.code} applied`);
+    setCouponMessage(`✓ ${coupon.code} applied successfully`);
   };
 
   const removeCoupon = () => {
@@ -950,7 +956,7 @@ Order Status: Pending
   /* ---------------- UI ---------------- */
 
   return (
-    <main className="min-h-screen bg-white pb-24 text-slate-950">
+    <main className="mtg-premium min-h-screen bg-white pb-24 text-slate-950">
 
       {/* PROMO */}
 
@@ -1012,7 +1018,7 @@ Order Status: Pending
                     : "border border-slate-200 bg-white text-slate-700"
                 }`}
               >
-                ❤️ Wishlist {wishlist.length}
+                Wishlist · {wishlist.length}
               </button>
 
               <div className="relative sm:w-72">
@@ -1183,7 +1189,7 @@ Order Status: Pending
 
                           {offer && (
                             <span className="absolute right-4 top-4 rounded-full bg-blue-600 px-3 py-1.5 text-[10px] font-black text-white shadow-md">
-                              {offer.discount_type === "percentage"
+                              {offer.offer_type === "percentage"
   ? `${offer.discount_value}% OFF`
   : `₹${offer.discount_value} OFF`}
                             </span>
@@ -1331,8 +1337,8 @@ Order Status: Pending
                 0 && (
                 <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-14 text-center">
 
-                  <div className="text-4xl">
-                    🔎
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-slate-200 bg-white text-2xl font-light text-slate-400">
+                    ⌕
                   </div>
 
                   <h3 className="mt-3 font-black">
@@ -1429,7 +1435,7 @@ Order Status: Pending
 
             <div>
               <div className="font-black">
-                ❤️ {wishlist.length} saved item
+                {wishlist.length} saved item
                 {wishlist.length > 1
                   ? "s"
                   : ""}
@@ -1464,7 +1470,7 @@ Order Status: Pending
           }
           className="fixed bottom-20 right-5 z-[70] flex items-center gap-3 rounded-full bg-[#102a56] px-5 py-3.5 text-sm font-black text-white shadow-2xl md:bottom-5"
         >
-          🛒 Cart
+          Cart
 
           <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-blue-600 px-1.5 text-xs">
             {cartCount}
