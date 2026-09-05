@@ -28,9 +28,24 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
-
+if (!Array.isArray(items) || items.length === 0) {
+  return NextResponse.json(
+    { error: "Cart is empty." },
+    { status: 400 }
+  );
+}
     const supabase = await createClient();
+const { error: stockError } = await supabase.rpc(
+  "validate_product_stock",
+  { p_items: items }
+);
 
+if (stockError) {
+  return NextResponse.json(
+    { error: stockError.message },
+    { status: 400 }
+  );
+}
     const { data, error } = await supabase.rpc(
       "create_store_order",
       {
