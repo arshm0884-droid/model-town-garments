@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import QRCode from "qrcode";
 import { storeData } from "@/data/storeData";
 
-type Product = (typeof storeData.products)[number];
+type Product = (typeof storeData.products)[number] & { dbId: string };
 
 type CartItem = {
   productId: number;
@@ -124,11 +124,17 @@ export default function Store() {
       }
 
 setDbProducts(
-  (data ?? []).map((p) => ({
-    ...p,
-    id: p.id,
-    name: p.name,
-    category: p.categories?.name || "All",
+  (data ?? []).map((p) => {
+    const staticProduct = storeData.products.find(
+      (item) => item.name.trim().toLowerCase() === p.name.trim().toLowerCase()
+    );
+
+    return {
+      ...p,
+      id: staticProduct?.id ?? 0,
+      dbId: p.id,
+      name: p.name,
+      category: p.categories?.name || "All",
           images: p.images ?? [],
     colors: p.colors ?? [],
     stock: Number(p.stock ?? 0),
@@ -141,8 +147,9 @@ setDbProducts(
     badge: p.badge ?? "",
     tags: [],
     featured: false,
-    newest: true,
-  }))
+      newest: true,
+    };
+  })
 );
 
 setLoading(false);
@@ -838,7 +845,7 @@ const sendWhatsAppOrder = async () => {
       },
       orderId,
       items: cartProducts.map((item) => ({
-        product_id: item.productId,
+        product_id: item.product.dbId,
         product_name: item.product.name,
         size: item.size,
         color: item.color,
