@@ -5,7 +5,10 @@ import { useEffect, useMemo, useState } from "react";
 import QRCode from "qrcode";
 import { storeData } from "@/data/storeData";
 
-type Product = (typeof storeData.products)[number] & { dbId: string };
+type Product = (typeof storeData.products)[number] & {
+  dbId: string;
+  images: string[];
+};
 
 type CartItem = {
   productId: number;
@@ -39,6 +42,8 @@ export default function Store() {
   const [category, setCategory] = useState("All");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("Popular");
+
+  const [cartReady, setCartReady] = useState(false);
 
   const [cart, setCart] = useState<CartItem[]>(() => {
     if (typeof window === "undefined") return [];
@@ -74,13 +79,32 @@ export default function Store() {
   const [zoomImage, setZoomImage] =
     useState(false);
 
+  const [selectedImageIndex, setSelectedImageIndex] =
+    useState(0);
+
   const [paymentOpen, setPaymentOpen] =
     useState(false);
+
+  const [checkoutStep, setCheckoutStep] =
+    useState<1 | 2 | 3>(1);
+
+  const [checkoutAddress, setCheckoutAddress] =
+    useState<Customer>({
+      name: "",
+      phone: "",
+      address: "",
+      city: "",
+      state: "",
+      pincode: "",
+    });
 
   const [qrCode, setQrCode] = useState("");
 
   const [addedId, setAddedId] =
     useState<number | null>(null);
+
+  const [selectedQuantity, setSelectedQuantity] =
+    useState<Record<number, number>>({});
 
   const [couponCode, setCouponCode] =
     useState("");
@@ -146,8 +170,11 @@ setDbProducts(
       dbId: p.id,
       name: p.name,
       category: p.categories?.name || "All",
-          images: p.images ?? [],
-    colors: p.colors ?? [],
+          images:
+            Array.isArray(p.images) && p.images.length > 0
+              ? p.images
+              : staticProduct?.gallery ?? [staticProduct?.image ?? ""],
+          colors: p.colors ?? [],
     stock: Number(p.stock ?? 0),
     fabric: p.fabric ?? "",
     fit: p.fit ?? "",
@@ -208,6 +235,10 @@ setLoading(false);
     }
 
     loadOffersAndCoupons();
+  }, []);
+
+  useEffect(() => {
+    setCartReady(true);
   }, []);
 
   /* ---------------- ACCOUNT CART SYNC ---------------- */
@@ -1701,9 +1732,45 @@ Order Status: Pending
         </section>
       )}
 
+      {/* MOBILE STICKY CART CTA */}
+      {cartReady && quickProduct && (
+        <div className="fixed bottom-0 left-0 right-0 z-[85] border-t border-slate-200 bg-white/95 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-2xl backdrop-blur md:hidden">
+          <div className="flex items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-xs font-black text-slate-500">
+                {quickProduct.name}
+              </div>
+              <div className="mt-1 text-lg font-black text-[#102a56]">
+                ₹{getDiscountedPrice(quickProduct)}
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                const quantity =
+                  selectedQuantity[quickProduct.id] ?? 1;
+
+                for (let i = 0; i < quantity; i++) {
+                  addToCart(quickProduct.id);
+                }
+
+                setSelectedQuantity((current) => ({
+                  ...current,
+                  [quickProduct.id]: 1,
+                }));
+              }}
+              className="rounded-2xl bg-[#102a56] px-6 py-3.5 text-sm font-black text-white shadow-lg"
+            >
+              ADD TO CART
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* CART FLOAT */}
 
-      {cartCount > 0 && (
+      {cartReady && cartCount > 0 && (
         <button
           onClick={() =>
             setCartOpen(true)
@@ -1756,44 +1823,52 @@ Order Status: Pending
             <div className="grid gap-8 p-5 sm:p-8 lg:grid-cols-2">
 
               {/* IMAGE */}
-
               <div>
-
                 <div
-                  onClick={() =>
-                    setZoomImage(true)
-                  }
-                  className="flex aspect-square cursor-zoom-in items-center justify-center rounded-[2rem] bg-gradient-to-br from-[#e5ebf3] via-white to-[#cdd9e8]"
+                  onClick={() => setZoomImage(true)}
+                  className="relative flex aspect-square cursor-zoom-in items-center justify-center overflow-hidden rounded-[2rem] bg-slate-50"
                 >
+                  <img
+                    src={
+                      quickProduct.images?.[selectedImageIndex] ||
+                      quickProduct.image
+                    }
+                    alt={quickProduct.name}
+                    className="h-full w-full object-cover"
+                  />
 
-                  <div className="text-center">
-
-                    <div className="text-8xl">
-                      {quickProduct.category ===
-                      "Jeans"
-                        ? "👖"
-                        : quickProduct.category ===
-                          "Shorts"
-                        ? "🩳"
-                        : quickProduct.category ===
-                            "Jackets" ||
-                          quickProduct.category ===
-                            "Hoodies"
-                        ? "🧥"
-                        : quickProduct.category ===
-                          "Shirts"
-                        ? "👔"
-                        : "👕"}
-                    </div>
-
-                    <div className="mt-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-                      Tap to zoom
-                    </div>
-
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-4 py-2 text-[10px] font-black uppercase tracking-[0.15em] text-white backdrop-blur">
+                    Tap to zoom
                   </div>
-
                 </div>
 
+                {quickProduct.images &&
+                  quickProduct.images.length > 1 && (
+                    <div className="mt-4 flex gap-3 overflow-x-auto pb-1">
+                      {quickProduct.images.map(
+                        (image, index) => (
+                          <button
+                            key={`${image}-${index}`}
+                            type="button"
+                            onClick={() =>
+                              setSelectedImageIndex(index)
+                            }
+                            className={`h-20 w-20 shrink-0 overflow-hidden rounded-xl border-2 ${
+                              selectedImageIndex === index
+                                ? "border-[#102a56]"
+                                : "border-slate-200"
+                            }`}
+                          >
+                            <img
+                              src={image}
+                              alt={`${quickProduct.name} ${index + 1}`}
+                              className="h-full w-full object-cover"
+                            />
+                          </button>
+                        )
+                      )}
+                    </div>
+                  )}
               </div>
 
               {/* DETAILS */}
@@ -2030,11 +2105,19 @@ Order Status: Pending
                   </button>
 
                   <button
-                    onClick={() =>
-                      addToCart(
-                        quickProduct.id
-                      )
-                    }
+                    onClick={() => {
+                      const quantity =
+                        selectedQuantity[quickProduct.id] ?? 1;
+
+                      for (let i = 0; i < quantity; i++) {
+                        addToCart(quickProduct.id);
+                      }
+
+                      setSelectedQuantity((current) => ({
+                        ...current,
+                        [quickProduct.id]: 1,
+                      }));
+                    }}
                     className="flex-1 rounded-2xl bg-[#102a56] px-5 py-4 text-sm font-black text-white"
                   >
                     ADD TO CART · ₹
@@ -2215,40 +2298,26 @@ Order Status: Pending
       {zoomImage &&
         quickProduct && (
           <div
-            className="fixed inset-0 z-[140] flex items-center justify-center bg-black/90 p-5"
-            onClick={() =>
-              setZoomImage(false)
-            }
+            className="fixed inset-0 z-[140] flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm"
+            onClick={() => setZoomImage(false)}
           >
+            <button
+              type="button"
+              onClick={() => setZoomImage(false)}
+              className="absolute right-4 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-2xl text-white backdrop-blur"
+            >
+              ×
+            </button>
 
-            <div className="text-center">
-
-              <div className="text-[10rem] sm:text-[14rem]">
-
-                {quickProduct.category ===
-                "Jeans"
-                  ? "👖"
-                  : quickProduct.category ===
-                    "Shorts"
-                  ? "🩳"
-                  : quickProduct.category ===
-                      "Jackets" ||
-                    quickProduct.category ===
-                      "Hoodies"
-                  ? "🧥"
-                  : quickProduct.category ===
-                    "Shirts"
-                  ? "👔"
-                  : "👕"}
-
-              </div>
-
-              <div className="text-sm font-bold text-white/60">
-                Tap anywhere to close
-              </div>
-
-            </div>
-
+            <img
+              src={
+                quickProduct.images?.[selectedImageIndex] ||
+                quickProduct.image
+              }
+              alt={quickProduct.name}
+              className="max-h-[90vh] max-w-full rounded-2xl object-contain"
+              onClick={(e) => e.stopPropagation()}
+            />
           </div>
         )}
 
@@ -2751,6 +2820,185 @@ Order Status: Pending
 
             </div>
 
+            {/* CHECKOUT STEPS */}
+            <div className="mt-6 flex items-center gap-2">
+              {[1, 2, 3].map((step) => (
+                <div key={step} className="flex flex-1 items-center gap-2">
+                  <div
+                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-black ${
+                      checkoutStep >= step
+                        ? "bg-[#102a56] text-white"
+                        : "bg-slate-100 text-slate-400"
+                    }`}
+                  >
+                    {step}
+                  </div>
+
+                  {step < 3 && (
+                    <div
+                      className={`h-1 flex-1 rounded-full ${
+                        checkoutStep > step
+                          ? "bg-[#102a56]"
+                          : "bg-slate-100"
+                      }`}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {checkoutStep === 1 && (
+              <div className="mt-6">
+                <div className="text-xs font-black uppercase tracking-[0.2em] text-blue-600">
+                  STEP 1
+                </div>
+
+                <h3 className="mt-2 text-xl font-black">
+                  Delivery Address
+                </h3>
+
+                <div className="mt-5 grid gap-3">
+                  {(
+                    [
+                      ["name", "Full Name"],
+                      ["phone", "Phone Number"],
+                      ["address", "Full Address"],
+                      ["city", "City"],
+                      ["state", "State"],
+                      ["pincode", "Pincode"],
+                    ] as const
+                  ).map(([key, label]) => (
+                    <input
+                      key={key}
+                      value={checkoutAddress[key]}
+                      onChange={(e) =>
+                        setCheckoutAddress((current) => ({
+                          ...current,
+                          [key]: e.target.value,
+                        }))
+                      }
+                      placeholder={label}
+                      inputMode={
+                        key === "phone" || key === "pincode"
+                          ? "numeric"
+                          : "text"
+                      }
+                      className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium outline-none focus:border-[#102a56]"
+                    />
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (
+                      !checkoutAddress.name.trim() ||
+                      !checkoutAddress.phone.trim() ||
+                      !checkoutAddress.address.trim() ||
+                      !checkoutAddress.city.trim() ||
+                      !checkoutAddress.state.trim() ||
+                      !checkoutAddress.pincode.trim()
+                    ) {
+                      alert("Please complete your delivery address.");
+                      return;
+                    }
+
+                    setCheckoutStep(2);
+                  }}
+                  className="mt-5 w-full rounded-2xl bg-[#102a56] px-5 py-4 text-sm font-black text-white"
+                >
+                  CONTINUE TO PAYMENT
+                </button>
+              </div>
+            )}
+
+            {checkoutStep === 2 && (
+              <div className="mt-6">
+                <div className="text-xs font-black uppercase tracking-[0.2em] text-blue-600">
+                  STEP 2
+                </div>
+
+                <h3 className="mt-2 text-xl font-black">
+                  Payment Method
+                </h3>
+
+                <button
+                  type="button"
+                  onClick={() => setCheckoutStep(3)}
+                  className="mt-5 w-full rounded-2xl border-2 border-[#102a56] bg-blue-50 p-5 text-left"
+                >
+                  <div className="text-sm font-black">
+                    UPI Payment
+                  </div>
+                  <div className="mt-1 text-xs text-slate-500">
+                    Pay securely using any UPI app
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setCheckoutStep(1)}
+                  className="mt-3 w-full rounded-2xl border border-slate-200 px-5 py-3 text-sm font-bold text-slate-600"
+                >
+                  BACK TO ADDRESS
+                </button>
+              </div>
+            )}
+
+            {checkoutStep === 3 && (
+              <div className="mt-6">
+                <div className="text-xs font-black uppercase tracking-[0.2em] text-blue-600">
+                  STEP 3
+                </div>
+
+                <h3 className="mt-2 text-xl font-black">
+                  Review Order
+                </h3>
+
+                <div className="mt-5 rounded-2xl bg-slate-50 p-4 text-sm">
+                  <div className="font-black">
+                    {checkoutAddress.name}
+                  </div>
+                  <div className="mt-1 text-slate-500">
+                    {checkoutAddress.phone}
+                  </div>
+                  <div className="mt-2 text-slate-500">
+                    {checkoutAddress.address},{" "}
+                    {checkoutAddress.city},{" "}
+                    {checkoutAddress.state} -{" "}
+                    {checkoutAddress.pincode}
+                  </div>
+                </div>
+
+                <div className="mt-4 rounded-2xl border border-slate-200 p-4">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-500">
+                      Payable Amount
+                    </span>
+                    <span className="font-black">
+                      ₹{total}
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={sendWhatsAppOrder}
+                  className="mt-5 w-full rounded-2xl bg-[#25D366] px-5 py-4 text-sm font-black text-white"
+                >
+                  CONFIRM & CONTINUE TO PAYMENT
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setCheckoutStep(2)}
+                  className="mt-3 w-full rounded-2xl border border-slate-200 px-5 py-3 text-sm font-bold text-slate-600"
+                >
+                  BACK TO PAYMENT
+                </button>
+              </div>
+            )}
+
             {/* FINAL PAYMENT SUMMARY */}
 
             <div className="mt-6 rounded-2xl bg-[#f4f6f9] p-5">
@@ -2925,7 +3173,7 @@ Order Status: Pending
               Cart
             </span>
 
-            {cartCount > 0 && (
+            {cartReady && cartCount > 0 && (
               <span className="absolute right-2 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-600 px-1 text-[8px] font-black text-white">
                 {cartCount}
               </span>
