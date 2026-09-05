@@ -52,6 +52,7 @@ export default function Store() {
   });
 
   const [cartOpen, setCartOpen] = useState(false);
+  const [cartHydrated, setCartHydrated] = useState(false);
 
   const [wishlist, setWishlist] = useState<number[]>([]);
   const [wishlistOnly, setWishlistOnly] = useState(false);
@@ -209,6 +210,83 @@ setLoading(false);
     loadOffersAndCoupons();
   }, []);
 
+  /* ---------------- ACCOUNT CART SYNC ---------------- */
+  useEffect(() => {
+    if (dbProducts.length === 0) return;
+
+    let cancelled = false;
+
+    async function loadAccountCart() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user || cancelled) {
+        if (!cancelled) setCartHydrated(true);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("shopping_carts")
+        .select("product_id, size, color, quantity")
+        .eq("user_id", user.id);
+
+      if (error) {
+        console.error("Supabase cart load error:", error);
+        if (!cancelled) setCartHydrated(true);
+        return;
+      }
+
+      const accountCart: CartItem[] = (data ?? [])
+        .map((item) => {
+          const product = dbProducts.find(
+            (p) => p.dbId === item.product_id
+          );
+
+          if (!product) return null;
+
+          return {
+            productId: product.id,
+            size: item.size,
+            color: item.color,
+            quantity: Number(item.quantity),
+          };
+        })
+        .filter((item): item is CartItem => item !== null);
+
+      if (cancelled) return;
+
+      setCart((current) => {
+        const merged = [...accountCart];
+
+        current.forEach((localItem) => {
+          const existing = merged.find(
+            (item) =>
+              item.productId === localItem.productId &&
+              item.size === localItem.size &&
+              item.color === localItem.color
+          );
+
+          if (existing) {
+            existing.quantity += localItem.quantity;
+          } else {
+            merged.push(localItem);
+          }
+        });
+
+        return merged;
+      });
+
+      setCartHydrated(true);
+    }
+
+    loadAccountCart();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [dbProducts, supabase]);
+
   /* ---------------- CART PERSISTENCE ---------------- */
   useEffect(() => {
     try {
@@ -217,6 +295,95 @@ setLoading(false);
       console.error("Cart persistence error:", error);
     }
   }, [cart]);
+
+  /* ---------------- CART DATABASE SYNC ---------------- */
+  useEffect(() => {
+    if (!cartHydrated || dbProducts.length === 0) return;
+
+    let cancelled = false;
+
+    async function syncAccountCart() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user || cancelled) return;
+
+      const rows = cart
+        .map((item) => {
+          const product = dbProducts.find(
+            (p) => p.id === item.productId
+          );
+
+          if (!product?.dbId) return null;
+
+          return {
+            user_id: user.id,
+            product_id: product.dbId,
+            size: item.size,
+            color: item.color,
+            quantity: item.quantity,
+          };
+        })
+        .filter((row): row is NonNullable<typeof row> => row !== null);
+
+      const { data: existingRows, error: loadError } = await supabase
+        .from("shopping_carts")
+        .select("id, product_id, size, color")
+        .eq("user_id", user.id);
+
+      if (loadError) {
+        console.error("Supabase cart sync load error:", loadError);
+        return;
+      }
+
+      if (rows.length > 0) {
+        const { error } = await supabase
+          .from("shopping_carts")
+          .upsert(rows, {
+            onConflict: "user_id,product_id,size,color",
+          });
+
+        if (error) {
+          console.error("Supabase cart sync error:", error);
+          return;
+        }
+      }
+
+      const activeKeys = new Set(
+        rows.map(
+          (row) =>
+            `${row.product_id}|${row.size}|${row.color}`
+        )
+      );
+
+      const staleIds = (existingRows ?? [])
+        .filter(
+          (row) =>
+            !activeKeys.has(
+              `${row.product_id}|${row.size}|${row.color}`
+            )
+        )
+        .map((row) => row.id);
+
+      if (staleIds.length > 0) {
+        const { error } = await supabase
+          .from("shopping_carts")
+          .delete()
+          .in("id", staleIds);
+
+        if (error) {
+          console.error("Supabase cart cleanup error:", error);
+        }
+      }
+    }
+
+    syncAccountCart();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [cart, cartHydrated, dbProducts, supabase]);
 
   /* ---------------- PRODUCT HELPERS ---------------- */
 
