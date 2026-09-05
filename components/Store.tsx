@@ -40,7 +40,17 @@ export default function Store() {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("Popular");
 
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    if (typeof window === "undefined") return [];
+
+    try {
+      const saved = window.localStorage.getItem("mtg_cart");
+      return saved ? (JSON.parse(saved) as CartItem[]) : [];
+    } catch {
+      return [];
+    }
+  });
+
   const [cartOpen, setCartOpen] = useState(false);
 
   const [wishlist, setWishlist] = useState<number[]>([]);
@@ -198,6 +208,15 @@ setLoading(false);
 
     loadOffersAndCoupons();
   }, []);
+
+  /* ---------------- CART PERSISTENCE ---------------- */
+  useEffect(() => {
+    try {
+      window.localStorage.setItem("mtg_cart", JSON.stringify(cart));
+    } catch (error) {
+      console.error("Cart persistence error:", error);
+    }
+  }, [cart]);
 
   /* ---------------- PRODUCT HELPERS ---------------- */
 
