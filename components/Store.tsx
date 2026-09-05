@@ -26,15 +26,11 @@ type Customer = {
 type Coupon = {
   id: string;
   code: string;
-  discount_type: "percentage" | "flat";
-  discount_value: number;
-  minimum_order: number;
-  maximum_discount: number | null;
-  usage_limit: number | null;
-  used_count: number;
-  starts_at: string | null;
-  expires_at: string | null;
+  type: "percentage" | "flat";
+  value: number;
+  minimum_order_amount: number;
   is_active: boolean;
+  created_at: string;
 };
 
 export default function Store() {
@@ -609,27 +605,27 @@ setLoading(false);
 
     if (
       subtotalAfterOffers <
-      appliedCoupon.minimum_order
+      appliedCoupon.minimum_order_amount
     ) {
       return 0;
     }
 
     if (
-      appliedCoupon.discount_type ===
+      appliedCoupon.type ===
       "percentage"
     ) {
       return Math.min(
         subtotalAfterOffers,
         Math.round(
           subtotalAfterOffers *
-            (appliedCoupon.discount_value / 100)
+            (appliedCoupon.value / 100)
         )
       );
     }
 
     return Math.min(
       subtotalAfterOffers,
-      appliedCoupon.discount_value
+      appliedCoupon.value
     );
   }, [
     appliedCoupon,
@@ -681,10 +677,10 @@ setLoading(false);
 
     if (
       subtotalAfterOffers <
-      Number(coupon.minimum_order)
+      Number(coupon.minimum_order_amount)
     ) {
       setCouponMessage(
-        `Minimum order ₹${coupon.minimum_order} required.`
+        `Minimum order ₹${coupon.minimum_order_amount} required.`
       );
       return;
     }
