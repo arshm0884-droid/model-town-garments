@@ -337,16 +337,67 @@ setLoading(false);
 
   /* ---------------- WISHLIST ---------------- */
 
-  const toggleWishlist = (
+  const toggleWishlist = async (
     productId: number
   ) => {
+    const product = dbProducts.find(
+      (item) => item.id === productId
+    );
+
+    if (!product?.dbId) {
+      console.error("Wishlist product UUID missing.");
+      return;
+    }
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    const isSaved = wishlist.includes(productId);
+
     setWishlist((current) =>
-      current.includes(productId)
-        ? current.filter(
-            (id) => id !== productId
-          )
+      isSaved
+        ? current.filter((id) => id !== productId)
         : [...current, productId]
     );
+
+    if (!user) return;
+
+    if (isSaved) {
+      const { error } = await supabase
+        .from("wishlists")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("product_id", product.dbId);
+
+      if (error) {
+        console.error("Supabase wishlist delete error:", error);
+        setWishlist((current) =>
+          current.includes(productId)
+            ? current
+            : [...current, productId]
+        );
+      }
+    } else {
+      const { error } = await supabase
+        .from("wishlists")
+        .upsert(
+          {
+            user_id: user.id,
+            product_id: product.dbId,
+          },
+          {
+            onConflict: "user_id,product_id",
+          }
+        );
+
+      if (error) {
+        console.error("Supabase wishlist save error:", error);
+        setWishlist((current) =>
+          current.filter((id) => id !== productId)
+        );
+      }
+    }
   };
 
   const addAllWishlistToCart = () => {
