@@ -16,6 +16,23 @@ import {
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
+type AccountOrder = {
+  id: string;
+  order_id: string;
+  subtotal: number;
+  offer_discount: number;
+  coupon_discount: number;
+  delivery_charge: number;
+  total: number;
+  coupon_code: string | null;
+  payment_method: string;
+  payment_status: string;
+  order_status: string;
+  payment_reference: string | null;
+  notes: string | null;
+  created_at: string;
+};
+
 type Address = {
   id: string;
   label: string;
@@ -44,6 +61,8 @@ export default function AccountPage() {
   const [phone, setPhone] = useState("");
 
   const [addresses, setAddresses] = useState<Address[]>([]);
+  const [orders, setOrders] = useState<AccountOrder[]>([]);
+  const [ordersLoading, setOrdersLoading] = useState(true);
   const [address, setAddress] = useState({
     label: "Home",
     name: "",
@@ -83,6 +102,29 @@ export default function AccountPage() {
         setAddresses(data || []);
       }
 
+      const normalizedPhone = (metadata.phone || "").replace(/\D/g, "");
+
+      if (normalizedPhone) {
+        const { data: customerRows } = await supabase
+          .from("customers")
+          .select("id")
+          .eq("phone", normalizedPhone)
+          .limit(1);
+
+        const customerId = customerRows?.[0]?.id;
+
+        if (customerId) {
+          const { data: orderRows } = await supabase
+            .from("orders")
+            .select("*")
+            .eq("customer_id", customerId)
+            .order("created_at", { ascending: false });
+
+          setOrders((orderRows || []) as AccountOrder[]);
+        }
+      }
+
+      setOrdersLoading(false);
       setLoading(false);
     }
 

@@ -19,6 +19,7 @@ type CartItem = {
 
 type Customer = {
   name: string;
+  email: string;
   phone: string;
   address: string;
   city: string;
@@ -91,6 +92,7 @@ export default function Store() {
   const [checkoutAddress, setCheckoutAddress] =
     useState<Customer>({
       name: "",
+      email: "",
       phone: "",
       address: "",
       city: "",
@@ -129,6 +131,7 @@ export default function Store() {
   const [customer, setCustomer] =
     useState<Customer>({
       name: "",
+      email: "",
       phone: "",
       address: "",
       city: "",
@@ -1105,6 +1108,7 @@ const sendWhatsAppOrder = async () => {
     body: JSON.stringify({
       customer: {
         name: customer.name.trim(),
+        email: customer.email.trim(),
         phone,
         address: customer.address.trim(),
         city: customer.city.trim(),

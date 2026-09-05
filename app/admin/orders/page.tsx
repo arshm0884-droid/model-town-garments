@@ -1,10 +1,8 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 const supabase = createClient();
-
 type Customer = {
   id: string;
   name: string;
@@ -44,6 +42,8 @@ type Order = {
   order_status: string;
   payment_reference: string | null;
   notes: string | null;
+  cancellation_reason: string | null;
+  cancelled_at: string | null;
   created_at: string;
   customer?: Customer | null;
   items?: OrderItem[];
@@ -68,6 +68,12 @@ const paymentStatuses = [
 ];
 
 export default function OrdersPage() {
+  const [paymentQr, setPaymentQr] = useState<{
+    orderId: string;
+    amount: number;
+    qr: string;
+  } | null>(null);
+
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -166,6 +172,13 @@ export default function OrdersPage() {
     id: string,
     payment_status: string
   ) {
+    const currentOrder = orders.find((order) => order.id === id);
+
+    if (!currentOrder) {
+      alert("Order not found.");
+      return;
+    }
+
     const { error } = await supabase
       .from("orders")
       .update({ payment_status })
@@ -183,9 +196,110 @@ export default function OrdersPage() {
           : order
       )
     );
+
+    if (
+      payment_status === "verified" &&
+      currentOrder.payment_status !== "verified"
+    ) {
+      try {
+        const response = await fetch("/api/admin/orders/email", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            order: {
+              ...currentOrder,
+              payment_status: "verified",
+            },
+          }),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          alert(
+            `Payment verified, but email failed: ${
+              result.error || "Unknown error"
+            }`
+          );
+          return;
+        }
+
+        const { error: sentError } = await supabase
+          .from("orders")
+          .update({
+            payment_confirmation_sent_at: new Date().toISOString(),
+          })
+          .eq("id", id);
+
+        if (sentError) {
+          console.error(
+            "Could not save email sent timestamp:",
+            sentError
+          );
+        }
+
+        setOrders((current) =>
+          current.map((order) =>
+            order.id === id
+              ? {
+                  ...order,
+                  payment_status: "verified",
+                }
+              : order
+          )
+        );
+
+        alert("Payment verified and invoice email sent.");
+      } catch (error) {
+        console.error(
+          "Payment confirmation email error:",
+          error
+        );
+
+        alert(
+          "Payment verified, but invoice email could not be sent."
+        );
+      }
+    }
   }
 
-  const filteredOrders = orders.filter((order) => {
+  async function updateOrderNotes(id: string, notes: string) {
+    const { error } = await supabase
+      .from("orders")
+      .update({ notes: notes.trim() || null })
+      .eq("id", id);
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    setOrders((current) =>
+      current.map((order) =>
+        order.id === id
+          ? { ...order, notes: notes.trim() || null }
+          : order
+      )
+    );
+
+    alert("Order remarks saved.");
+  }
+
+  async function generatePaymentQr(order: Order) {
+  try {
+    const upiUrl = `upi://pay?pa=9917001812@fam&pn=MODEL%20TOWN%20GARMENTS&am=${Number(order.total).toFixed(2)}&cu=INR&tn=${encodeURIComponent(order.order_id)}`;
+    const QRCode = (await import("qrcode")).default;
+    const qr = await QRCode.toDataURL(upiUrl, { width: 500, margin: 2 });
+    setPaymentQr({ orderId: order.order_id, amount: Number(order.total), qr });
+  } catch (error) {
+    console.error("QR generation error:", error);
+    alert("Payment QR generate nahi hua.");
+  }
+}
+
+const filteredOrders = orders.filter((order) => {
     const customer = order.customer;
 
     const text = search.toLowerCase().trim();
@@ -292,7 +406,69 @@ export default function OrdersPage() {
                         </p>
                       </div>
 
-                      <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="mb-4 flex flex-wrap gap-2">
+  <button
+    type="button"
+    onClick={() => generatePaymentQr(order)}
+    className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white"
+  >
+    GENERATE PAYMENT QR
+  </button>
+</div>
+
+{paymentQr?.orderId === order.order_id && (
+  <div className="mb-5 rounded-2xl border border-blue-500/30 bg-blue-500/5 p-4">
+    <p className="text-sm font-semibold">PAYMENT QR</p>
+    <p className="mt-1 text-sm text-white/60">
+      Order: {paymentQr.orderId} · Amount: ₹{paymentQr.amount.toLocaleString("en-IN")}
+    </p>
+    <img
+      src={paymentQr.qr}
+      alt="UPI Payment QR"
+      className="mt-4 h-64 w-64 rounded-xl bg-white p-3"
+    />
+    <div className="mt-4 flex flex-wrap gap-2">
+      <a
+        href={paymentQr.qr}
+        download={`payment-${paymentQr.orderId}.png`}
+        className="inline-flex rounded-xl bg-white px-4 py-2 text-sm font-semibold text-black"
+      >
+        DOWNLOAD QR
+      </a>
+
+      <button
+        type="button"
+        onClick={() => {
+          const phone = String(order.customer?.whatsapp || order.customer?.phone || "")
+            .replace(/\D/g, "");
+
+          if (!phone) {
+            alert("Customer WhatsApp number available nahi hai.");
+            return;
+          }
+
+          const message =
+            `*MODEL TOWN GARMENTS*\n` +
+            `Payment Request\n\n` +
+            `Order ID: ${paymentQr.orderId}\n` +
+            `Amount: ₹${paymentQr.amount.toLocaleString("en-IN")}\n\n` +
+            `Please pay the exact amount using the payment QR sent by us.\n` +
+            `After payment, please share the payment screenshot/UTR.`;
+
+          window.open(
+            `https://wa.me/${phone}?text=${encodeURIComponent(message)}`,
+            "_blank"
+          );
+        }}
+        className="inline-flex rounded-xl bg-green-600 px-4 py-2 text-sm font-semibold text-white"
+      >
+        SEND ON WHATSAPP
+      </button>
+    </div>
+  </div>
+)}
+
+<div className="grid gap-3 sm:grid-cols-2">
                         <div>
                           <label className="mb-1 block text-xs text-white/40">
                             Order Status
@@ -588,12 +764,61 @@ export default function OrdersPage() {
                         </div>
                       </div>
 
-                      {order.notes && (
-                        <div className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/60">
-                          <strong>Notes:</strong>{" "}
-                          {order.notes}
-                        </div>
-                      )}
+                      <div className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4">
+                        <p className="text-sm font-black text-white">
+                          Admin Remarks
+                        </p>
+
+                        <textarea
+                          defaultValue={order.notes || ""}
+                          id={`order-notes-${order.id}`}
+                          rows={3}
+                          placeholder="Add an internal/customer order remark..."
+                          className="mt-3 w-full resize-none rounded-xl border border-white/10 bg-black/10 px-3 py-3 text-sm text-white outline-none placeholder:text-white/30 focus:border-white/30"
+                        />
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const element = document.getElementById(
+                              `order-notes-${order.id}`
+                            ) as HTMLTextAreaElement | null;
+
+                            updateOrderNotes(
+                              order.id,
+                              element?.value || ""
+                            );
+                          }}
+                          className="mt-3 rounded-xl bg-white px-4 py-2.5 text-xs font-black text-[#102a56] transition hover:bg-slate-100"
+                        >
+                          Save Remarks
+                        </button>
+                      </div>
+
+                      {order.order_status === "cancelled" &&
+                        (order.cancellation_reason || order.cancelled_at) && (
+                          <div className="mt-5 rounded-2xl border border-red-400/20 bg-red-500/10 p-4 text-sm">
+                            <p className="font-black text-red-300">
+                              Cancellation Details
+                            </p>
+
+                            {order.cancellation_reason && (
+                              <p className="mt-2 text-white/70">
+                                <strong>Reason:</strong>{" "}
+                                {order.cancellation_reason}
+                              </p>
+                            )}
+
+                            {order.cancelled_at && (
+                              <p className="mt-1 text-white/50">
+                                <strong>Cancelled:</strong>{" "}
+                                {new Date(
+                                  order.cancelled_at
+                                ).toLocaleString("en-IN")}
+                              </p>
+                            )}
+                          </div>
+                        )}
                     </div>
                   )}
                 </div>
