@@ -298,7 +298,7 @@ export default function LoginPage() {
 
     setLoading(true);
 
-    let resendError = null;
+    let resendError: { message: string } | null = null;
 
     if (mode === "signup") {
       const result = await supabase.auth.resend({

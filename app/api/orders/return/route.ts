@@ -33,7 +33,7 @@ export async function POST(request: Request) {
 
     const phone = String(user.user_metadata?.phone || "").replace(/\D/g, "");
 
-    let customer = null;
+    let customer: { id: string } | null = null;
 
     if (user.email) {
       const { data } = await supabase

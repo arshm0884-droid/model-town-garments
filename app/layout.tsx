@@ -43,6 +43,14 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_IN",
     siteName: "Model Town Garments",
+    images: [
+      {
+        url: "/images/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Model Town Garments",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",

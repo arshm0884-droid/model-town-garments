@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { ArrowLeft, Building2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -32,6 +33,18 @@ export default function AboutPage() {
           <h1 className="text-3xl font-black">
             About {data?.business_name || "Us"}
           </h1>
+        </div>
+
+        <div className="mt-7 overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] shadow-2xl">
+          <div className="relative aspect-[16/10]">
+            <Image
+              src="/images/about-brand.png"
+              alt="Model Town Garments men's clothing store"
+              fill
+              sizes="(max-width: 768px) 100vw, 768px"
+              className="object-cover"
+            />
+          </div>
         </div>
 
         <article className="mt-7 whitespace-pre-wrap rounded-3xl border border-white/10 bg-white/[0.04] p-6 leading-7 text-white/70">

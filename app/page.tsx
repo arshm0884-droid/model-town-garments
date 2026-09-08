@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import Store from "@/components/Store";
@@ -92,35 +93,23 @@ export default function Home() {
 
           <div className="relative mx-auto w-full max-w-xl">
             <div className="absolute -inset-8 rounded-full bg-gradient-to-br from-blue-200/50 via-violet-200/40 to-emerald-100/40 blur-3xl" />
-            <div className="relative overflow-hidden rounded-[30px] border border-slate-200 bg-slate-950 p-3 shadow-2xl shadow-slate-900/10">
-              <div className="relative min-h-[390px] overflow-hidden rounded-[23px] bg-gradient-to-br from-slate-900 via-blue-950 to-violet-950 p-7 text-white sm:min-h-[460px]">
-                <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-blue-500/25 blur-2xl" />
-                <div className="absolute -bottom-24 -left-20 h-72 w-72 rounded-full bg-violet-500/20 blur-2xl" />
-                <div className="relative flex h-full min-h-[350px] flex-col justify-between sm:min-h-[420px]">
-                  <div>
-                    <div className="text-[10px] font-black tracking-[0.28em] text-blue-300">MODEL TOWN GARMENTS</div>
-                    <div className="mt-4 max-w-sm text-3xl font-black leading-tight tracking-[-0.04em] sm:text-5xl">
-                      Premium looks.
-                      <br />
-                      Simple shopping.
-                    </div>
-                  </div>
-                  <div>
-                    <div className="grid grid-cols-2 gap-3">
-                      {[
-                        ["SHIRTS", "01"],
-                        ["DENIM", "02"],
-                        ["TEES", "03"],
-                        ["JACKETS", "04"],
-                      ].map(([name, number]) => (
-                        <div key={name} className="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur-sm">
-                          <div className="text-[9px] font-black tracking-[0.2em] text-white/45">{number}</div>
-                          <div className="mt-2 text-xs font-black tracking-wide">{name}</div>
-                        </div>
-                      ))}
-                    </div>
-                    <p className="mt-5 text-xs font-semibold text-white/55">Joya · Amroha · All India Delivery</p>
-                  </div>
+            <div className="relative overflow-hidden rounded-[30px] border border-slate-200 bg-white p-2 shadow-2xl shadow-slate-900/10">
+              <div className="relative aspect-[16/10] overflow-hidden rounded-[24px] bg-slate-100">
+                <Image
+                  src="/images/home-hero.png"
+                  alt="Model Town Garments premium men's wear collection"
+                  fill
+                  priority
+                  sizes="(max-width: 1024px) 100vw, 48vw"
+                  className="object-cover transition duration-700 hover:scale-[1.03]"
+                />
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/75 via-slate-950/25 to-transparent p-6">
+                  <p className="text-[10px] font-black tracking-[0.25em] text-blue-200">
+                    MODEL TOWN GARMENTS
+                  </p>
+                  <p className="mt-1 text-xl font-black text-white sm:text-2xl">
+                    Premium Men&apos;s Wear
+                  </p>
                 </div>
               </div>
             </div>
@@ -148,8 +137,18 @@ export default function Home() {
 
       <section id="about" className="bg-[#f7f8fb] py-14 sm:py-20">
         <div className="mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[1.1fr_.9fr] lg:px-8">
-          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-            <p className="text-[10px] font-black tracking-[0.25em] text-blue-600">ABOUT MODEL TOWN GARMENTS</p>
+          <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
+            <div className="relative aspect-[4/3]">
+              <Image
+                src="/images/about-brand.png"
+                alt="Model Town Garments store interior"
+                fill
+                sizes="(max-width: 1024px) 100vw, 55vw"
+                className="object-cover"
+              />
+            </div>
+            <div className="p-6 sm:p-8">
+              <p className="text-[10px] font-black tracking-[0.25em] text-blue-600">ABOUT MODEL TOWN GARMENTS</p>
             <h2 className="mt-3 text-3xl font-black tracking-[-0.04em] sm:text-4xl">Menswear without the clutter.</h2>
             <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-500 sm:text-base">
               We focus on practical men&apos;s fashion, clear pricing and a straightforward shopping experience. Browse the collection online and get your order delivered across India.
@@ -158,6 +157,7 @@ export default function Home() {
               {storeData.categories.filter((item) => item !== "All").slice(0, 6).map((item) => (
                 <span key={item} className="rounded-full bg-slate-100 px-3 py-2 text-[10px] font-black text-slate-600">{item}</span>
               ))}
+            </div>
             </div>
           </div>
 
