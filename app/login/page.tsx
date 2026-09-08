@@ -450,7 +450,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => switchMode("forgot")}
-                  className="!bg-transparent !text-[#2563eb] text-sm font-bold hover:underline"
+                  className="mtg-auth-link !appearance-none !border-0 !bg-transparent !p-0 !text-[#2563eb] text-sm font-bold hover:!bg-transparent hover:underline"
                 >
                   Forgot password?
                 </button>
@@ -471,7 +471,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => switchMode("signup")}
-                  className="!bg-transparent !text-[#2563eb] font-black hover:underline"
+                  className="mtg-auth-link !appearance-none !border-0 !bg-transparent !p-0 !text-[#2563eb] font-black hover:!bg-transparent hover:underline"
                 >
                   Create an account
                 </button>
@@ -538,7 +538,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => switchMode("login")}
-                  className="!bg-transparent !text-[#2563eb] font-black hover:underline"
+                  className="mtg-auth-link !appearance-none !border-0 !bg-transparent !p-0 !text-[#2563eb] font-black hover:!bg-transparent hover:underline"
                 >
                   Login
                 </button>

@@ -5845,3 +5845,18 @@ html.mt-route-changing body > * {
 .mtg-site #brands .grid > div:nth-child(3n+2) { background:linear-gradient(135deg,#f5f3ff,#fff) !important; border-color:#ddd6fe !important; }
 .mtg-site #brands .grid > div:nth-child(3n+3) { background:linear-gradient(135deg,#fdf2f8,#fff) !important; border-color:#fbcfe8 !important; }
 .mtg-site #location { background:linear-gradient(135deg,#172554,#312e81 55%,#581c87) !important; }
+
+/* Auth text links: never render a button background */
+.mtg-customer-page .mtg-auth-link,
+.mtg-customer-page .mtg-auth-link:hover,
+.mtg-customer-page .mtg-auth-link:focus,
+.mtg-customer-page .mtg-auth-link:active {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  color: #2563eb !important;
+}
