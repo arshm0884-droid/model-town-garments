@@ -450,7 +450,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => switchMode("forgot")}
-                  className="text-sm font-bold text-[#2563eb] hover:underline"
+                  className="!bg-transparent !text-[#2563eb] text-sm font-bold hover:underline"
                 >
                   Forgot password?
                 </button>
@@ -471,7 +471,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => switchMode("signup")}
-                  className="font-black text-[#2563eb]"
+                  className="!bg-transparent !text-[#2563eb] font-black hover:underline"
                 >
                   Create an account
                 </button>
@@ -538,7 +538,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => switchMode("login")}
-                  className="font-black text-[#2563eb]"
+                  className="!bg-transparent !text-[#2563eb] font-black hover:underline"
                 >
                   Login
                 </button>
